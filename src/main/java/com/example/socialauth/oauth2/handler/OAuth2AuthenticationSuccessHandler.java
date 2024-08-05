@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * OAuth2 인증 성공 핸들러
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component
