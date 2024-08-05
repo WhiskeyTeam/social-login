@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ObjectUtils;
 
@@ -32,11 +31,28 @@ public class OAuth2Attributes {
         this.provider = provider;
     }
 
-    @SneakyThrows
-    public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
-        log.info("userNameAttributeName = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(userNameAttributeName));
-        log.info("attributes = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(attributes));
+    /**
+     * 소셜 로그인 공급자에 따라 OAuth2Attributes 객체를 생성하는 정적 팩토리 메서드
+     *
+     * @param registrationId        소셜 로그인 공급자 ID
+     * @param userNameAttributeName 사용자 이름 속성 이름
+     * @param attributes            사용자 속성 맵
+     * @return OAuth2Attributes 객체
+     * @throws OAuth2RegistrationException 지원하지 않는 소셜 로그인 공급자일 경우 예외 발생
+     */
+    public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) throws OAuth2RegistrationException {
+        try {
+            log.info("userNameAttributeName = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(userNameAttributeName));
+            log.info("attributes = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(attributes));
+        } catch (JsonProcessingException e) {
+            log.error("Error processing JSON for logging", e);
+            throw new OAuth2RegistrationException("Error processing JSON for logging");
+        }
+
+        // registrationId를 소문자로 변환
         String registrationIdToLower = registrationId.toLowerCase();
+
+        // 소셜 로그인 공급자에 따라 적절한 메서드 호출
         switch (registrationIdToLower) {
             case "naver":
                 return ofNaver(userNameAttributeName, attributes);
@@ -45,9 +61,19 @@ public class OAuth2Attributes {
         }
     }
 
+    /**
+     * 네이버 로그인 사용자의 OAuth2Attributes 객체를 생성하는 메서드
+     *
+     * @param userNameAttributeName 사용자 이름 속성 이름
+     * @param attributes            사용자 속성 맵
+     * @return OAuth2Attributes 객체
+     */
     @SuppressWarnings("unchecked")
     private static OAuth2Attributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
+        // attributes 맵에서 "response" 키의 값을 가져옴
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
+        // OAuth2Attributes 객체를 빌더 패턴을 사용하여 생성 및 반환
         return OAuth2Attributes.builder()
                 .oauthId((String) response.get("id"))
                 .nickname((String) response.get("name"))
@@ -59,4 +85,3 @@ public class OAuth2Attributes {
                 .build();
     }
 }
-
