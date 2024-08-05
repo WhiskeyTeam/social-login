@@ -9,12 +9,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @RequiredArgsConstructor
 @Configuration
@@ -37,6 +35,7 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .formLogin(form -> form
                         .loginPage("/login") // 로그인 페이지 URL 설정
+                        .defaultSuccessUrl("/success", true)
                         .permitAll()
                 )
                 .csrf().disable()
@@ -45,11 +44,11 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(new AntPathRequestMatcher("/images/**"), new AntPathRequestMatcher("/js/**"), new AntPathRequestMatcher("/webjars/**")).permitAll()
-                        .requestMatchers("/login", "/success").permitAll()
+                        .requestMatchers("/", "/login", "/success", "/images/**", "/js/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login") // OAuth2 로그인 페이지 설정
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(customOidcUserService)
                                 .userService(customOAuth2AuthService)
@@ -59,18 +58,10 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
+                        .logoutSuccessUrl("/")
                         .permitAll()
                 );
-        return http.build();
-    }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers(
-                new AntPathRequestMatcher("/images/**"),
-                new AntPathRequestMatcher("/js/**"),
-                new AntPathRequestMatcher("/webjars/**")
-        );
+        return http.build();
     }
 }
