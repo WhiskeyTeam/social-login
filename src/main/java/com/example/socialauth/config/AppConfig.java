@@ -9,13 +9,16 @@ import org.springframework.context.annotation.Configuration;
 public class AppConfig {
 
     @Value("DXEMF06fL20Py67dy9pp")
-    private String clientId;
+    private String naverClientId;
 
     @Value("89Y9atEqvW")
-    private String clientSecret;
+    private String naverClientSecret;
+
+    @Value("62790710914-0uj632naot18b9s7vq28inn1122l506o.apps.googleusercontent.com")
+    private String googleClientId;
 
     @Bean
     public CustomLogoutSuccessHandler customLogoutSuccessHandler() {
-        return new CustomLogoutSuccessHandler(clientId, clientSecret);
+        return new CustomLogoutSuccessHandler(naverClientId, naverClientSecret, googleClientId);
     }
 }

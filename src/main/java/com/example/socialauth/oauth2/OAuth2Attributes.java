@@ -19,6 +19,17 @@ public class OAuth2Attributes {
     private final String picture;
     private final Provider provider;
 
+    /**
+     * OAuth2Attributes 생성자
+     *
+     * @param attributes 사용자 속성 맵
+     * @param nameAttributeKey 사용자 이름 속성 키
+     * @param oauthId OAuth ID
+     * @param nickname 사용자 닉네임
+     * @param email 사용자 이메일
+     * @param picture 사용자 프로필 사진
+     * @param provider 소셜 로그인 제공자
+     */
     @Builder
     public OAuth2Attributes(Map<String, Object> attributes, String nameAttributeKey, String oauthId, String nickname, String email, String picture, Provider provider) {
         this.attributes = attributes;
@@ -41,6 +52,7 @@ public class OAuth2Attributes {
      */
     public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) throws BadRequestException {
         try {
+            // 사용자 이름 속성과 사용자 속성을 로그에 기록
             log.info("userNameAttributeName = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(userNameAttributeName));
             log.info("attributes = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(attributes));
         } catch (JsonProcessingException e) {
@@ -55,6 +67,10 @@ public class OAuth2Attributes {
         switch (registrationIdToLower) {
             case "naver":
                 return ofNaver(userNameAttributeName, attributes);
+
+            case "google":
+                return ofGoogle(userNameAttributeName, attributes);
+
             default:
                 throw new BadRequestException("해당 소셜 로그인은 현재 지원하지 않습니다.");
         }
@@ -81,6 +97,26 @@ public class OAuth2Attributes {
                 .provider(Provider.NAVER)
                 .attributes(response)
                 .nameAttributeKey("id")
+                .build();
+    }
+
+    /**
+     * 구글 로그인 사용자의 OAuth2Attributes 객체를 생성하는 메서드
+     *
+     * @param userNameAttributeName 사용자 이름 속성 이름
+     * @param attributes            사용자 속성 맵
+     * @return OAuth2Attributes 객체
+     */
+    private static OAuth2Attributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        // OAuth2Attributes 객체를 빌더 패턴을 사용하여 생성 및 반환
+        return OAuth2Attributes.builder()
+                .oauthId((String) attributes.get(userNameAttributeName))
+                .nickname((String) attributes.get("name"))
+                .email((String) attributes.get("email"))
+                .picture((String) attributes.get("picture"))
+                .provider(Provider.GOOGLE)
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
                 .build();
     }
 }
