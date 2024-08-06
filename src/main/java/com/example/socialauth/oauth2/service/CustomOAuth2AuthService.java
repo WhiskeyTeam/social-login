@@ -28,6 +28,10 @@ public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequ
             OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
             OAuth2User oAuth2User = delegate.loadUser(request);
 
+            // access_token을 로그로 출력
+            String accessToken = request.getAccessToken().getTokenValue();
+            log.info("Access Token: {}", accessToken);
+
             // 클라이언트 등록 ID를 가져옴
             String registrationId = request.getClientRegistration().getRegistrationId();
 
@@ -54,4 +58,5 @@ public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequ
             throw new OAuth2AuthenticationException(oauth2Error, e);
         }
     }
+
 }
