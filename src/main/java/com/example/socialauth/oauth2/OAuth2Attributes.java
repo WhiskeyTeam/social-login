@@ -1,13 +1,12 @@
 package com.example.socialauth.oauth2;
 
-import com.example.socialauth.oauth2.exception.OAuth2RegistrationException;
+import com.example.socialauth.exception.BadRequestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.ObjectUtils;
 
 @Slf4j
 @Getter
@@ -38,15 +37,15 @@ public class OAuth2Attributes {
      * @param userNameAttributeName 사용자 이름 속성 이름
      * @param attributes            사용자 속성 맵
      * @return OAuth2Attributes 객체
-     * @throws OAuth2RegistrationException 지원하지 않는 소셜 로그인 공급자일 경우 예외 발생
+     * @throws BadRequestException 지원하지 않는 소셜 로그인 공급자일 경우 예외 발생
      */
-    public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) throws OAuth2RegistrationException {
+    public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) throws BadRequestException {
         try {
             log.info("userNameAttributeName = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(userNameAttributeName));
             log.info("attributes = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(attributes));
         } catch (JsonProcessingException e) {
             log.error("Error processing JSON for logging", e);
-            throw new OAuth2RegistrationException("Error processing JSON for logging");
+            throw new BadRequestException("Error processing JSON for logging");
         }
 
         // registrationId를 소문자로 변환
@@ -57,7 +56,7 @@ public class OAuth2Attributes {
             case "naver":
                 return ofNaver(userNameAttributeName, attributes);
             default:
-                throw new OAuth2RegistrationException("해당 소셜 로그인은 현재 지원하지 않습니다.");
+                throw new BadRequestException("해당 소셜 로그인은 현재 지원하지 않습니다.");
         }
     }
 
