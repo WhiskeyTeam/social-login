@@ -5,6 +5,7 @@ import com.example.socialauth.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.example.socialauth.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import com.example.socialauth.oauth2.service.CustomOAuth2AuthService;
 import com.example.socialauth.oauth2.service.CustomOidcUserService;
+import com.example.socialauth.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +23,18 @@ public class SecurityConfig {
 
     private final CustomOAuth2AuthService customOAuth2AuthService;
     private final CustomOidcUserService customOidcUserService;
-    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
+    private final MemberService memberService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+        return new OAuth2AuthenticationSuccessHandler(memberService);
     }
 
     @Bean
@@ -57,7 +63,7 @@ public class SecurityConfig {
                                 .oidcUserService(customOidcUserService)
                                 .userService(customOAuth2AuthService)
                         )
-                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .successHandler(oAuth2AuthenticationSuccessHandler())
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .logout(logout -> logout

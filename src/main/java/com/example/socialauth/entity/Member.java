@@ -35,7 +35,7 @@ public class Member {
     private Timestamp deletedAt;
 
     @Column(nullable = false)
-    private boolean isActive;
+    private boolean isActive = true;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

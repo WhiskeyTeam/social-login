@@ -47,3 +47,4 @@ spring:
 
 server:
   port: 80
+
