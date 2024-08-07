@@ -1,7 +1,8 @@
 package com.example.socialauth.controller;
 
 import com.example.socialauth.entity.Member;
-import com.example.socialauth.service.MemberService;
+import com.example.socialauth.service.MemberManagementService;
+import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final MemberService memberService;
+    private final MemberManagementService memberManagementService;
+    private final SocialLoginService socialLoginService;
 
     @GetMapping("/register")
     public String showRegisterForm(HttpServletRequest request, Model model) {
@@ -38,7 +40,7 @@ public class HomeController {
         String email = params.get("email");
         String password = params.get("password");
 
-        memberService.registerMember(name, nickname, loginId, email, password, Member.LoginType.Normal);
+        memberManagementService.registerMember(name, nickname, loginId, email, password);
 
         redirectAttributes.addFlashAttribute("message", "Registration successful");
         return "redirect:/success";
@@ -57,8 +59,8 @@ public class HomeController {
 
         if (userAttributes != null) {
             String loginTypeStr = (String) userAttributes.get("loginType");
-            Member.LoginType loginType = Member.LoginType.valueOf(loginTypeStr);
-            memberService.registerSocialMember(name, nickname, loginId, email, loginType);
+            Member.LoginType loginType = Member.LoginType.valueOf(loginTypeStr.toUpperCase());
+            socialLoginService.handleSocialLogin(loginId, name, email, loginType);
         }
 
         redirectAttributes.addFlashAttribute("message", "Registration successful");

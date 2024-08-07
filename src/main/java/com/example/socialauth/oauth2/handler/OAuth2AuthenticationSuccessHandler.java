@@ -1,7 +1,7 @@
 package com.example.socialauth.oauth2.handler;
 
 import com.example.socialauth.entity.Member;
-import com.example.socialauth.service.MemberService;
+import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final MemberService memberService;
+    private final SocialLoginService socialLoginService;
 
-    public OAuth2AuthenticationSuccessHandler(MemberService memberService) {
-        this.memberService = memberService;
+    public OAuth2AuthenticationSuccessHandler(SocialLoginService socialLoginService) {
+        this.socialLoginService = socialLoginService;
     }
 
     @Override
@@ -41,18 +41,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             userAttributes.put("loginType", Member.LoginType.Normal.name());
         }
 
-        // 로그인 ID는 이메일로 사용
-        Member existingMember = memberService.findByLoginId(loginId);
+        // 세션에 소셜 로그인 사용자 정보를 저장
+        request.getSession().setAttribute("userAttributes", userAttributes);
 
-        if (existingMember != null) {
-            // 이미 가입된 회원인 경우
-            getRedirectStrategy().sendRedirect(request, response, "/success");
-        } else {
-            // 가입되지 않은 회원인 경우
-            userAttributes.put("loginId", loginId);
-            request.getSession().setAttribute("userAttributes", userAttributes);
-            getRedirectStrategy().sendRedirect(request, response, "/register");
-        }
+        // 회원가입 페이지로 리디렉션
+        getRedirectStrategy().sendRedirect(request, response, "/register");
     }
 
     private String getClientRegistrationId(Authentication authentication) {
