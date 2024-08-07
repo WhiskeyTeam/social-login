@@ -16,6 +16,11 @@ public class HomeController {
         return "login"; // 로그인 페이지
     }
 
+    @GetMapping("/register")
+    public String showRegisterPage() {
+        return "register"; // Thymeleaf 템플릿 파일 이름
+    }
+
     @GetMapping("/success")
     public String success() {
         return "success"; // 로그인 성공 페이지
