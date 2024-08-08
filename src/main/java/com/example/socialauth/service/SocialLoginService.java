@@ -45,7 +45,7 @@ public class SocialLoginService {
      * @param email    사용자 이메일
      * @param loginType 로그인 유형
      */
-    public void handleSocialLogin(HttpSession session, String loginId, String name, String email, String loginType) {
+    public boolean handleSocialLogin(HttpSession session, String loginId, String name, String email, String loginType) {
         Optional<Member> member = Optional.empty();
 
         if ("Google".equalsIgnoreCase(loginType)) {
@@ -57,11 +57,17 @@ public class SocialLoginService {
         if (member.isPresent()) {
             // 이미 회원이 존재하면 로그인 처리 (세션에 회원 정보 저장 등)
             session.setAttribute("member", member.get());
+            return true; // 회원이 이미 존재함
         } else {
             // 회원 정보가 없으면 회원가입 페이지로 리디렉트
             // 세션에 소셜 로그인 사용자 정보를 저장
-            session.setAttribute("userAttributes", Map.of("name", name, "email", email, "loginType", loginType));
-            // 회원가입 로직 추가
+            session.setAttribute("userAttributes", Map.of(
+                    "loginId", loginId,
+                    "name", name,
+                    "email", email,
+                    "loginType", loginType
+            ));
+            return false; // 회원이 존재하지 않음
         }
     }
 
@@ -71,6 +77,7 @@ public class SocialLoginService {
      * @return 저장된 회원 객체
      */
     public Member save(Member member) {
+        member.setImageFileId(null); // 초기값을 null로 설정
         return memberRepository.save(member);
     }
 }

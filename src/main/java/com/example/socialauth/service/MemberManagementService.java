@@ -11,16 +11,12 @@ import java.util.Optional;
 @Service
 public class MemberManagementService {
 
-    private MemberRepository memberRepository;
-    private PasswordEncoder passwordEncoder;
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public void setMemberRepository(MemberRepository memberRepository) {
+    public MemberManagementService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
-    }
-
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -57,5 +53,15 @@ public class MemberManagementService {
      */
     public Optional<Member> findByLoginId(String loginId) {
         return memberRepository.findByLoginId(loginId);
+    }
+
+    /**
+     * 회원 정보를 저장합니다.
+     * @param member 회원 객체
+     * @return 저장된 회원 객체
+     */
+    public Member save(Member member) {
+        member.setImageFileId(null); // 초기값을 null로 설정
+        return memberRepository.save(member);
     }
 }

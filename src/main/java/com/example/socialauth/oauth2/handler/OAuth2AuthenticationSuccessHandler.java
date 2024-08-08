@@ -1,6 +1,5 @@
 package com.example.socialauth.oauth2.handler;
 
-import com.example.socialauth.entity.Member;
 import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -36,33 +34,21 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         if ("google".equals(registrationId)) {
             loginId = (String) userAttributes.get("sub");
             loginType = "Google";
-            userAttributes.put("loginType", Member.LoginType.Google.name());
+            userAttributes.put("loginType", loginType);
         } else if ("naver".equals(registrationId)) {
             loginId = (String) userAttributes.get("id");
             loginType = "Naver";
-            userAttributes.put("loginType", Member.LoginType.Naver.name());
+            userAttributes.put("loginType", loginType);
         }
 
-        socialLoginService.handleSocialLogin(request.getSession(), loginId, (String) userAttributes.get("name"), email, loginType);
-
-        Optional<Member> optionalMember = Optional.empty();
-        if ("Google".equalsIgnoreCase(loginType)) {
-            optionalMember = socialLoginService.findMemberByGoogleSub(loginId);
-        } else if ("Naver".equalsIgnoreCase(loginType)) {
-            optionalMember = socialLoginService.findMemberByNaverId(loginId);
-        }
-
-        if (optionalMember.isPresent()) {
-            getRedirectStrategy().sendRedirect(request, response, "/home");
+        if (socialLoginService.handleSocialLogin(request.getSession(), loginId, (String) userAttributes.get("name"), email, loginType)) {
+            getRedirectStrategy().sendRedirect(request, response, "/success");
         } else {
-            request.getSession().setAttribute("userAttributes", userAttributes);
-            request.getSession().setAttribute("isSocialLogin", true);
             getRedirectStrategy().sendRedirect(request, response, "/register");
         }
     }
 
     private String getClientRegistrationId(Authentication authentication) {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        return oAuth2User.getAuthorities().iterator().next().getAuthority();
+        return ((OAuth2User) authentication.getPrincipal()).getAttributes().get("clientRegistrationId").toString();
     }
 }
