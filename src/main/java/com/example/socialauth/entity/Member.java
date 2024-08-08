@@ -4,44 +4,68 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "tbl_member")
+@Getter
+@Setter
 public class Member {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "login_id", nullable = false, unique = true)
     private String loginId;
 
-    @Column(nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "password")
     private String password;
 
-    @Column(nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
-
-    private Timestamp deletedAt;
-
-    @Column(nullable = false)
-    private boolean isActive = true;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "login_type", nullable = false)
     private LoginType loginType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "image_file_id", nullable = true)
+    private Long imageFileId;
+
     public enum LoginType {
-        Google, Naver, Normal
+        BASIC,
+        Google,
+        Naver
+    }
+
+    public enum Role {
+        ADMIN,
+        OWNER,
+        USER
+    }
+
+    public Member() {
+        this.isActive = true;
+        this.createdAt = LocalDateTime.now();
+        this.imageFileId = null; // 초기값을 null로 설정
     }
 }

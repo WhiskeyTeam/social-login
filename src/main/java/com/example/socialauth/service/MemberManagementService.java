@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class MemberManagementService {
 
@@ -22,6 +24,16 @@ public class MemberManagementService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * 새로운 회원을 등록합니다.
+     *
+     * @param name     회원 이름
+     * @param nickname 회원 닉네임
+     * @param loginId  로그인 ID
+     * @param email    이메일
+     * @param password 비밀번호 (없을 경우 null)
+     * @return 등록된 회원 정보
+     */
     public Member registerMember(String name, String nickname, String loginId, String email, String password) {
         Member member = new Member();
         member.setName(name);
@@ -29,12 +41,21 @@ public class MemberManagementService {
         member.setLoginId(loginId);
         member.setEmail(email);
         member.setPassword(password != null ? passwordEncoder.encode(password) : null);
-        member.setLoginType(Member.LoginType.Normal);
+        member.setLoginType(Member.LoginType.BASIC);
+        member.setRole(Member.Role.USER);
+        member.setActive(true);
+        member.setImageFileId(null); // 초기값을 null로 설정
 
         return memberRepository.save(member);
     }
 
-    public Member findByLoginId(String loginId) {
+    /**
+     * 로그인 ID를 이용하여 회원 정보를 조회합니다.
+     *
+     * @param loginId 로그인 ID
+     * @return 회원 정보 Optional 객체
+     */
+    public Optional<Member> findByLoginId(String loginId) {
         return memberRepository.findByLoginId(loginId);
     }
 }

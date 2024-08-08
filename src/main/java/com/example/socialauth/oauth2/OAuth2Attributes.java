@@ -94,7 +94,7 @@ public class OAuth2Attributes {
                 .nickname((String) response.get("name"))
                 .email((String) response.get("email"))
                 .picture((String) response.get("profile_image"))
-                .provider(Provider.NAVER)
+                .provider(Provider.Naver)
                 .attributes(response)
                 .nameAttributeKey("id")
                 .build();
@@ -114,7 +114,7 @@ public class OAuth2Attributes {
                 .nickname((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("picture"))
-                .provider(Provider.GOOGLE)
+                .provider(Provider.Google)
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();

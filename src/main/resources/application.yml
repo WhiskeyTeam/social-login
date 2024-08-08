@@ -29,6 +29,7 @@ spring:
             authorization-grant-type: authorization_code
             scope: name, email, profile_image
             client-name: Naver
+
           google:
             client-id: 62790710914-0uj632naot18b9s7vq28inn1122l506o.apps.googleusercontent.com
             client-secret: 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
@@ -52,11 +53,3 @@ spring:
 server:
   port: 80
 
-  session:
-    store-type: none
-  jmx:
-    enabled: false
-
-logging:
-  level:
-    root: debug

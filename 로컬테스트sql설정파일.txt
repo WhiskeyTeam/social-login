@@ -1,0 +1,42 @@
+use mysql;
+show databases;
+create database memdb;
+CREATE USER 'ohgiraffers'@'%' IDENTIFIED BY 'ohgiraffers';
+GRANT ALL PRIVILEGES ON memdb.* TO 'ohgiraffers'@'%';
+
+-- auto-generated definition
+create table tbl_image_file
+(
+    id                 bigint auto_increment
+        primary key,
+    uploaded_at        datetime(6)  not null,
+    original_file_name varchar(255) not null,
+    uuid_file_name     varchar(255) not null
+);
+
+
+
+
+create table tbl_member
+(
+    is_active     bit                               not null,
+    created_at    datetime(6)                       not null,
+    deleted_at    datetime(6)                       null,
+    id            bigint auto_increment
+        primary key,
+    image_file_id bigint                            null,
+    email         varchar(255)                      not null,
+    login_id      varchar(255)                      not null,
+    name          varchar(255)                      not null,
+    nickname      varchar(255)                      not null,
+    password      varchar(255)                      null,
+    login_type    enum ('BASIC', 'GOOGLE', 'NAVER') not null,
+    role          enum ('ADMIN', 'OWNER', 'USER')   not null,
+    constraint UK2q9sys95qyvbykrwp69ec6613
+        unique (image_file_id),
+    constraint UK65qu3ho0nxcjxtf83fjgndpwk
+        unique (login_id),
+    constraint FKgsnrppkhwce5mdhvhwkioe611
+        foreign key (image_file_id) references tbl_image_file (id)
+);
+

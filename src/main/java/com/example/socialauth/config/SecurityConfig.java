@@ -5,6 +5,7 @@ import com.example.socialauth.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.example.socialauth.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import com.example.socialauth.oauth2.service.CustomOAuth2AuthService;
 import com.example.socialauth.oauth2.service.CustomOidcUserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -22,6 +25,7 @@ public class SecurityConfig {
     private CustomOAuth2AuthService customOAuth2AuthService;
     private CustomOidcUserService customOidcUserService;
     private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     @Autowired
@@ -40,50 +44,67 @@ public class SecurityConfig {
     }
 
     @Autowired
+    public void setOAuth2AuthenticationSuccessHandler(OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) {
+        this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
+    }
+
+    @Autowired
     public void setCustomLogoutSuccessHandler(CustomLogoutSuccessHandler customLogoutSuccessHandler) {
         this.customLogoutSuccessHandler = customLogoutSuccessHandler;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .httpBasic().disable()
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .and()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/login", "/register", "/oauth2/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                        .anyRequest().authenticated()
+                )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/perform_login")
-                        .defaultSuccessUrl("/success", true)
+                        .defaultSuccessUrl("/home", true)
                         .failureUrl("/login?error=true")
                         .permitAll()
-                )
-                .csrf().disable()
-                .cors().and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/login", "/register", "/success", "/static/**", "/images/**", "/css/**", "/js/**", "/webjars/**").permitAll()
-                        .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(customOidcUserService)
                                 .userService(customOAuth2AuthService)
+                                .oidcUserService(customOidcUserService)
                         )
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
                         .logoutSuccessHandler(customLogoutSuccessHandler)
                         .permitAll()
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.sendRedirect("/home");
+        };
+    }
+
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return (request, response, exception) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.sendRedirect("/login?error=true");
+        };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
