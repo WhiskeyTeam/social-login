@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,33 +20,15 @@ public class SocialLoginService {
         this.memberRepository = memberRepository;
     }
 
-    /**
-     * 구글 Sub ID를 이용하여 회원 정보를 조회합니다.
-     * @param googleSub 구글 Sub ID
-     * @return 회원 정보 Optional 객체
-     */
     public Optional<Member> findMemberByGoogleSub(String googleSub) {
         return memberRepository.findByGoogleSub(googleSub);
     }
 
-    /**
-     * 네이버 ID를 이용하여 회원 정보를 조회합니다.
-     * @param naverId 네이버 ID
-     * @return 회원 정보 Optional 객체
-     */
     public Optional<Member> findMemberByNaverId(String naverId) {
         return memberRepository.findByNaverId(naverId);
     }
 
-    /**
-     * 소셜 로그인 처리 로직을 수행합니다.
-     * @param session  세션 객체
-     * @param loginId  로그인 ID
-     * @param name     사용자 이름
-     * @param email    사용자 이메일
-     * @param loginType 로그인 유형
-     */
-    public boolean handleSocialLogin(HttpSession session, String loginId, String name, String email, String loginType) {
+    public void handleSocialLogin(HttpSession session, String loginId, String name, String email, String loginType) {
         Optional<Member> member = Optional.empty();
 
         if ("Google".equalsIgnoreCase(loginType)) {
@@ -57,27 +40,19 @@ public class SocialLoginService {
         if (member.isPresent()) {
             // 이미 회원이 존재하면 로그인 처리 (세션에 회원 정보 저장 등)
             session.setAttribute("member", member.get());
-            return true; // 회원이 이미 존재함
         } else {
             // 회원 정보가 없으면 회원가입 페이지로 리디렉트
             // 세션에 소셜 로그인 사용자 정보를 저장
-            session.setAttribute("userAttributes", Map.of(
-                    "loginId", loginId,
-                    "name", name,
-                    "email", email,
-                    "loginType", loginType
-            ));
-            return false; // 회원이 존재하지 않음
+            Map<String, String> userAttributes = new HashMap<>();
+            if (name != null) userAttributes.put("name", name);
+            if (email != null) userAttributes.put("email", email);
+            if (loginType != null) userAttributes.put("loginType", loginType);
+
+            session.setAttribute("userAttributes", userAttributes);
         }
     }
 
-    /**
-     * 회원 정보를 저장합니다.
-     * @param member 회원 객체
-     * @return 저장된 회원 객체
-     */
     public Member save(Member member) {
-        member.setImageFileId(null); // 초기값을 null로 설정
         return memberRepository.save(member);
     }
 }
