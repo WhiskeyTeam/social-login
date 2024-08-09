@@ -31,12 +31,6 @@ public class Member {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "google_sub")
-    private String googleSub;
-
-    @Column(name = "naver_id")
-    private String naverId;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "login_type", nullable = false)
     private LoginType loginType;

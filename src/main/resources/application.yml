@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/memdb
-    username: root
-    password: mysql1
+    username: ohgiraffers
+    password: ohgiraffers
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   web:
