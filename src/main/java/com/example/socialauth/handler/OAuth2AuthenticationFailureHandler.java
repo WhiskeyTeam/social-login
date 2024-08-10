@@ -1,4 +1,4 @@
-package com.example.socialauth.oauth2.handler;
+package com.example.socialauth.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

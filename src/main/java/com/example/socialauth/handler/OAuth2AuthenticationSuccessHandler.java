@@ -1,4 +1,4 @@
-package com.example.socialauth.oauth2.handler;
+package com.example.socialauth.handler;
 
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.service.SocialLoginService;

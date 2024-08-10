@@ -1,4 +1,4 @@
-package com.example.socialauth.oauth2.service;
+package com.example.socialauth.service;
 
 import com.example.socialauth.oauth2.OAuth2Attributes;
 import java.util.Collections;

@@ -31,7 +31,8 @@ public class OAuth2Attributes {
      * @param provider 소셜 로그인 제공자
      */
     @Builder
-    public OAuth2Attributes(Map<String, Object> attributes, String nameAttributeKey, String oauthId, String nickname, String email, String picture, Provider provider) {
+    public OAuth2Attributes(Map<String, Object> attributes, String nameAttributeKey, String oauthId,
+                            String nickname, String email, String picture, Provider provider) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
         this.oauthId = oauthId;

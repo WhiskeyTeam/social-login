@@ -1,10 +1,10 @@
 package com.example.socialauth.config;
 
 import com.example.socialauth.handler.CustomLogoutSuccessHandler;
-import com.example.socialauth.oauth2.handler.OAuth2AuthenticationFailureHandler;
-import com.example.socialauth.oauth2.handler.OAuth2AuthenticationSuccessHandler;
-import com.example.socialauth.oauth2.service.CustomOAuth2AuthService;
-import com.example.socialauth.oauth2.service.CustomOidcUserService;
+import com.example.socialauth.handler.OAuth2AuthenticationFailureHandler;
+import com.example.socialauth.handler.OAuth2AuthenticationSuccessHandler;
+import com.example.socialauth.service.CustomOAuth2AuthService;
+import com.example.socialauth.service.CustomOidcUserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
