@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -103,7 +103,7 @@
     </div>
     <div class="form-section">
         <h1>Foodfolio 회원가입</h1>
-        <form th:action="@{/register_basic}" method="post">
+        <form action="/register_basic" method="post">
             <div class="input-group">
                 <input type="text" id="loginId" name="loginId" placeholder="로그인 ID (이메일)" required>
                 <button type="button" onclick="checkLoginId()">중복 체크</button>
@@ -115,7 +115,7 @@
             <button type="submit" id="submit-btn" disabled>회원가입</button>
         </form>
         <div class="options">
-            <span>이미 계정이 있으신가요? <a th:href="@{/login}">로그인</a></span>
+            <span>이미 계정이 있으신가요? <a href="/login">로그인</a></span>
         </div>
     </div>
 </div>

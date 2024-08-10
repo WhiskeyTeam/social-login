@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register_basic", "/register_social", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/", "/login", "/register_basic", "/register_social", "/success", "/css/**", "/js/**", "/images/**").permitAll() // 여기 추가
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
