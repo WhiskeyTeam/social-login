@@ -134,7 +134,7 @@ public class MemberController {
             return "register_basic";
         }
 
-        return "redirect:/success";
+        return "redirect:/login";
     }
 
 
