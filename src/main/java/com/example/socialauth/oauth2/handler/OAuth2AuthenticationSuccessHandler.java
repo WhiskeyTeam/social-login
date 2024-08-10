@@ -31,22 +31,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> userAttributes = oAuth2User.getAttributes();
 
-        String email = (String) userAttributes.get("email");
         String loginId = null;
         Member.LoginType loginType;
 
-        // 소셜 로그인 타입을 결정하고 null이 될 수 없도록 보장
         String registrationId = getClientRegistrationId(authentication);
-
 
         switch (registrationId) {
             case "google":
-                loginId = (String) userAttributes.get("sub");
-                loginType = Member.LoginType.Google;
+                loginId = (String) userAttributes.get("sub");  // Google의 경우 sub를 식별자로 사용
+                loginType = Member.LoginType.GOOGLE;
                 break;
             case "naver":
-                loginId = (String) userAttributes.get("id");
-                loginType = Member.LoginType.Naver;
+                loginId = (String) userAttributes.get("id");  // Naver의 경우 id를 식별자로 사용
+                loginType = Member.LoginType.NAVER;
                 break;
             default:
                 throw new IllegalStateException("Unknown registrationId: " + registrationId);
@@ -55,21 +52,22 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         Optional<Member> optionalMember = socialLoginService.findMemberByLoginIdAndLoginType(loginId, loginType);
 
         if (optionalMember.isPresent()) {
-            socialLoginService.handleSocialLogin(request.getSession(), loginId, (String) userAttributes.get("name"), email, loginType.name());
+            // 이미 존재하는 사용자는 로그인 처리
+            Member member = optionalMember.get();
+            request.getSession().setAttribute("member", member);
             getRedirectStrategy().sendRedirect(request, response, "/success");
         } else {
             // 사용자가 존재하지 않으면 회원가입 페이지로 리디렉션
             request.getSession().setAttribute("userAttributes", userAttributes);
-            request.getSession().setAttribute("isSocialLogin", true);
-            getRedirectStrategy().sendRedirect(request, response, "/register");
+            request.getSession().setAttribute("loginType", loginType.name());
+            request.getSession().setAttribute("loginId", loginId);  // 식별자 저장
+            getRedirectStrategy().sendRedirect(request, response, "/register_social");
         }
     }
 
     private String getClientRegistrationId(Authentication authentication) {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
-
-        System.out.println("OAuth2User attributes: " + attributes);
 
         if (attributes.containsKey("sub")) {
             return "google";
@@ -79,3 +77,4 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         throw new IllegalStateException("Unknown OAuth2 provider");
     }
 }
+

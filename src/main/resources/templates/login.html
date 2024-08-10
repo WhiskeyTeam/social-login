@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -123,8 +123,8 @@
     </div>
     <div class="form-section">
         <h1>Foodfolio에 오신 것을 환영합니다</h1>
-        <form th:action="@{/login}" method="post">
-            <input type="text" id="username" name="username" placeholder="아이디" required />
+        <form action="/login" method="post">
+            <input type="text" id="loginId" name="loginId" placeholder="아이디" required />
             <input type="password" id="password" name="password" placeholder="비밀번호" required />
             <div class="options">
                 <label>
@@ -135,12 +135,12 @@
             <button type="submit">로그인</button>
         </form>
         <div class="options">
-            <span>계정이 없으신가요? <a th:href="@{/register}">회원가입</a></span>
+            <span>계정이 없으신가요? <a href="/register_basic">회원가입</a></span>
         </div>
         <div class="divider">또는</div>
         <div class="social-login">
-            <a th:href="@{/oauth2/authorization/naver}" th:data-social="naver" class="naver"></a>
-            <a th:href="@{/oauth2/authorization/google}" th:data-social="google" class="google"></a>
+            <a href="/oauth2/authorization/naver" class="naver"></a>
+            <a href="/oauth2/authorization/google" class="google"></a>
         </div>
     </div>
 </div>

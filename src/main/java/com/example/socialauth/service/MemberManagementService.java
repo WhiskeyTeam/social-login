@@ -21,6 +21,16 @@ public class MemberManagementService {
     }
 
     /**
+     * 로그인 ID를 이용하여 회원 정보를 조회합니다.
+     *
+     * @param loginId 로그인 ID
+     * @return 회원 정보 Optional 객체
+     */
+    public Optional<Member> findByLoginId(String loginId) {
+        return memberRepository.findByLoginId(loginId);
+    }
+
+    /**
      * 새로운 회원을 등록합니다.
      *
      * @param name     회원 이름
@@ -40,28 +50,22 @@ public class MemberManagementService {
         member.setLoginType(Member.LoginType.BASIC);
         member.setRole(Member.Role.USER);
         member.setActive(true);
-        member.setImageFileId(null); // 초기값을 null로 설정
 
-        return memberRepository.save(member);
-    }
-
-    /**
-     * 로그인 ID를 이용하여 회원 정보를 조회합니다.
-     *
-     * @param loginId 로그인 ID
-     * @return 회원 정보 Optional 객체
-     */
-    public Optional<Member> findByLoginId(String loginId) {
-        return memberRepository.findByLoginId(loginId);
+        try {
+            return memberRepository.save(member);
+        } catch (Exception e) {
+            System.err.println("회원 저장 중 오류 발생: " + e.getMessage());
+            return null;
+        }
     }
 
     /**
      * 회원 정보를 저장합니다.
+     *
      * @param member 회원 객체
      * @return 저장된 회원 객체
      */
     public Member save(Member member) {
-        member.setImageFileId(null); // 초기값을 null로 설정
         return memberRepository.save(member);
     }
 }

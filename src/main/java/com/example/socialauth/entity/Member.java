@@ -32,11 +32,11 @@ public class Member {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "login_type", nullable = false)
+    @Column(name = "login_type", nullable = true)
     private LoginType loginType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role", nullable = true)
     private Role role;
 
     @Column(name = "is_active", nullable = false)
@@ -53,8 +53,8 @@ public class Member {
 
     public enum LoginType {
         BASIC,
-        Google,
-        Naver
+        GOOGLE,
+        NAVER
     }
 
     public enum Role {
