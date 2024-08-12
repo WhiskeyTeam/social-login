@@ -85,12 +85,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
+    public AuthenticationFailureHandler oAuth2AuthenticationFailureHandler() {
         return (request, response, exception) -> {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.sendRedirect("/login?error=true");
+            if (exception.getMessage().equals("User registration required")) {
+                response.sendRedirect("/register_social"); // 회원가입 페이지로 리다이렉트
+            } else {
+                response.sendRedirect("/login?error=true"); // 일반적인 오류 처리
+            }
         };
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

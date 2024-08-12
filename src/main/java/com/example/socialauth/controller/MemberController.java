@@ -7,7 +7,6 @@ import com.example.socialauth.service.MemberManagementService;
 import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,20 +14,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Controller
 public class MemberController {
 
-    @Autowired
-    private SocialLoginService socialLoginService;
+    private final SocialLoginService socialLoginService;
+    private final MemberManagementService memberManagementService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    private MemberManagementService memberManagementService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public MemberController(SocialLoginService socialLoginService, MemberManagementService memberManagementService, PasswordEncoder passwordEncoder) {
+        this.socialLoginService = socialLoginService;
+        this.memberManagementService = memberManagementService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @GetMapping("/")
     public String home() {
@@ -41,7 +41,10 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String loginId, @RequestParam(required = false) String password, HttpSession session, Model model) {
+    public String login(@RequestParam String loginId,
+                        @RequestParam(required = false) String password,
+                        HttpSession session,
+                        Model model) {
         try {
             Member member = memberManagementService.findByLoginId(loginId);
 
@@ -71,19 +74,21 @@ public class MemberController {
         String nickname = allParams.get("nickname");
 
         try {
-            Member existingMember = memberManagementService.findByLoginId(loginId);
+            // Check if the loginId already exists
+            memberManagementService.findByLoginId(loginId);
             model.addAttribute("error", "이미 존재하는 로그인 ID입니다. 다른 ID를 사용해주세요.");
             return "register_basic";
         } catch (Exception e) {
-            // 회원이 존재하지 않을 경우 계속 진행
+            // Proceed if member does not exist
         }
 
-        // 비밀번호 인코딩
+        // Encode the password
         String encodedPassword = passwordEncoder.encode(password);
 
+        // Create a new member
         Member member = new Member();
         member.setLoginId(loginId);
-        member.setPassword(encodedPassword); // 인코딩된 비밀번호 저장
+        member.setPassword(encodedPassword);
         member.setName(name);
         member.setEmail(email);
         member.setNickname(nickname);
@@ -100,54 +105,40 @@ public class MemberController {
         return "redirect:/login";
     }
 
-    @PostMapping("/checkLoginId")
-    public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
-        Map<String, Boolean> response = new HashMap<>();
-        try {
-            Member existingMember = memberManagementService.findByLoginId(loginId);
-            response.put("exists", true);
-        } catch (Exception e) {
-            response.put("exists", false);
-        }
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping("/register_social")
     public String registerSocial(@RequestParam String nickname, HttpSession session, Model model) {
         String loginId = (String) session.getAttribute("loginId");
         String loginTypeStr = (String) session.getAttribute("loginType");
 
         if (loginId == null || loginTypeStr == null) {
-            return "redirect:/login"; // 세션에 필요한 정보가 없으면 로그인 페이지로 리다이렉트
+            return "redirect:/login"; // Redirect to login page if session data is missing
         }
 
         LoginType loginType = LoginType.valueOf(loginTypeStr);
 
         try {
+            // Check if member already exists
             Member existingMember = socialLoginService.findMemberByLoginIdAndLoginType(loginId, loginType);
-            model.addAttribute("error", "이미 존재하는 회원입니다.");
-            return "register_social";
+            if (existingMember != null) {
+                model.addAttribute("error", "이미 존재하는 회원입니다.");
+                return "register_social";
+            }
 
-        } catch (Exception e) {
-            // 회원이 존재하지 않을 경우 계속 진행
-        }
+            // Create a new social member
+            Member member = new Member();
+            member.setLoginId(loginId);
+            member.setNickname(nickname);
+            member.setLoginType(loginType);
+            member.setRole(Role.USER);
+            member.setPassword(null); // No password needed for social login
 
-        Member member = new Member();
-        member.setLoginId(loginId);
-        member.setNickname(nickname);
-        member.setLoginType(loginType);
-        member.setRole(Role.USER);
-        member.setPassword(null); // 소셜 로그인은 비밀번호가 필요 없음
-
-        try {
             socialLoginService.save(member);
+            session.setAttribute("member", member);
+            return "redirect:/success";
         } catch (Exception ex) {
             model.addAttribute("error", "회원가입 중 오류가 발생했습니다.");
             return "register_social";
         }
-
-        session.setAttribute("member", member);
-        return "redirect:/success";
     }
 
     @GetMapping("/success")
@@ -177,7 +168,7 @@ public class MemberController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate(); // 세션 완전히 초기화
+        session.invalidate(); // Invalidate the session completely
         return "redirect:/login";
     }
 }

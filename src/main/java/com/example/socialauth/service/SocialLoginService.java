@@ -3,10 +3,10 @@ package com.example.socialauth.service;
 import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.repository.MemberRepository;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 @Service
@@ -32,7 +32,7 @@ public class SocialLoginService {
 
         Member member = findMemberByLoginIdAndLoginType(loginId, type);
 
-        if (member != null) {  // Null 체크
+        if (member != null) {
             session.setAttribute("member", member);
         } else {
             session.setAttribute("userAttributes", Map.of("name", name, "email", email, "loginType", loginType, "loginId", loginId));

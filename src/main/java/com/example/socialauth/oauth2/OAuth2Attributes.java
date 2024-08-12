@@ -1,5 +1,6 @@
 package com.example.socialauth.oauth2;
 
+import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.exception.BadRequestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -119,5 +120,19 @@ public class OAuth2Attributes {
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
+    }
+
+    /**
+     * LoginType을 반환하는 메서드
+     * @return LoginType
+     */
+    public LoginType getLoginType() {
+        if (provider == Provider.Google) {
+            return LoginType.GOOGLE;
+        } else if (provider == Provider.Naver) {
+            return LoginType.NAVER;
+        } else {
+            throw new IllegalArgumentException("Unsupported provider: " + provider);
+        }
     }
 }
