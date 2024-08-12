@@ -3,78 +3,68 @@ package com.example.socialauth.service;
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.oauth2.CustomOAuth2User;
 import com.example.socialauth.oauth2.OAuth2Attributes;
+import com.example.socialauth.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class CustomOAuth2AuthService extends DefaultOAuth2UserService {
 
-    private final SocialLoginService socialLoginService;
+    private final MemberRepository memberRepository;
     private final HttpSession session;
     private final HttpServletResponse response;
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest request) {
-        log.info("CustomOAuth2AuthService");
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) {
+        OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        OAuth2User oAuth2User = null;
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        try {
-            OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
-            oAuth2User = delegate.loadUser(request);
+        OAuth2Attributes attributes = OAuth2Attributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-            if (oAuth2User == null) {
-                log.warn("OAuth2User is null, redirecting to social registration page.");
-                redirectToRegisterPage();
-                return null;
-            }
+        // 사용자 정보로 데이터베이스에서 회원 조회
+        Member member = memberRepository.findByLoginIdAndLoginType(attributes.getOauthId(), attributes.getLoginType());
 
-            String registrationId = request.getClientRegistration().getRegistrationId();
-            String userNameAttributeName = request.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
-            OAuth2Attributes attributes = OAuth2Attributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
+        // Null 체크 추가
+        if (attributes == null || attributes.getAttributes() == null) {
+            log.error("OAuth2Attributes is null. This should not happen.");
+            throw new IllegalStateException("Failed to load user attributes from OAuth2 provider.");
+        }
 
-            Member member = socialLoginService.findMemberByLoginIdAndLoginType(attributes.getOauthId(), attributes.getLoginType());
-
-            if (member != null) {
-                // 사용자가 존재하는 경우 로그인
-                return new CustomOAuth2User(attributes.getAttributes(), attributes.getNameAttributeKey());
-            } else {
-                // 사용자가 존재하지 않는 경우, 회원가입 페이지로 리다이렉트
+        if (member == null) {
+            // 사용자가 없을 경우, 회원가입 페이지로 리다이렉트
+            try {
                 session.setAttribute("userAttributes", attributes.getAttributes());
                 session.setAttribute("loginType", attributes.getLoginType().toString());
                 session.setAttribute("loginId", attributes.getOauthId());
-                redirectToRegisterPage();
-                return null;
+                response.sendRedirect("/register_social");
+            } catch (IOException e) {
+                log.error("Redirect failed", e);
             }
-
-        } catch (Exception e) {
-            log.error("Exception during OAuth2 authentication: ", e);
-            try {
-                redirectToErrorPage();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            return null;
+            // 사용자에게 기본 권한을 가진 OAuth2User 객체 반환
+            return new CustomOAuth2User(attributes.getAttributes(), attributes.getNameAttributeKey(),
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         }
-    }
 
-    private void redirectToRegisterPage() throws IOException {
-        response.sendRedirect("/register_social");
-    }
+        // 기존 회원이 있는 경우, 사용자 정보와 권한 생성하여 반환
+        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(member.getRole().name()));
 
-    private void redirectToErrorPage() throws IOException {
-        response.sendRedirect("/error");
+        return new CustomOAuth2User(attributes.getAttributes(), attributes.getNameAttributeKey(), authorities);
     }
 }
+
+

@@ -7,7 +7,6 @@ import com.example.socialauth.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class MemberManagementService {
@@ -22,38 +21,25 @@ public class MemberManagementService {
     }
 
     public Member findByLoginId(String loginId) {
-        try {
-            return memberRepository.findByLoginId(loginId);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("회원이 존재하지 않습니다.");
-        }
+        return memberRepository.findByLoginId(loginId);
     }
 
-    public Member findByLoginIdAndLoginType(String loginId, LoginType loginType) {
-        try {
-            return memberRepository.findByLoginIdAndLoginType(loginId, loginType);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("해당 로그인 타입의 회원이 존재하지 않습니다.");
-        }
-    }
-
-    public Member registerMember(String name, String nickname, String loginId, String email, String password,LoginType loginType) {
-        try {
-            findByLoginId(loginId);
+    public Member registerMember(String name, String nickname, String loginId, String email, String password, LoginType loginType) {
+        if (findByLoginId(loginId) != null) {
             throw new IllegalArgumentException("이미 존재하는 로그인 ID입니다.");
-        } catch (EntityNotFoundException e) {
-            Member member = new Member();
-            member.setName(name);
-            member.setNickname(nickname);
-            member.setLoginId(loginId);
-            member.setEmail(email);
-            member.setPassword(password != null ? passwordEncoder.encode(password) : null);
-            member.setLoginType(loginType != null ? loginType : LoginType.BASIC);
-            member.setRole(Role.USER);
-            member.setActive(true);
-
-            return memberRepository.save(member);
         }
+
+        Member member = new Member();
+        member.setName(name);
+        member.setNickname(nickname);
+        member.setLoginId(loginId);
+        member.setEmail(email);
+        member.setPassword(password != null ? passwordEncoder.encode(password) : null);
+        member.setLoginType(loginType != null ? loginType : LoginType.BASIC);
+        member.setRole(Role.USER);
+        member.setActive(true);
+
+        return memberRepository.save(member);
     }
 
     public Member save(Member member) {

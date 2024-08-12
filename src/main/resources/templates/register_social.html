@@ -84,10 +84,9 @@
         <h1>Foodfolio 소셜 회원가입</h1>
         <form th:action="@{/register_social}" method="post">
             <input type="text" name="name" placeholder="이름" required
-                   th:value="${userAttributes['name']}"
-                   readonly>
+                   th:value="${userAttributes['name']}" readonly>
             <input type="text" name="nickname" placeholder="닉네임" required>
-            <input type="email" name="email" placeholder="로그인 ID (이메일)" required
+            <input type="text" name="loginId" placeholder="로그인 ID (이메일)" required
                    th:value="${userAttributes['email']}"
                    readonly>
             <input type="email" name="email" placeholder="이메일" required
