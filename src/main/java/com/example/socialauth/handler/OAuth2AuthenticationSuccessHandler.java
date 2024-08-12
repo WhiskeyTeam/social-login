@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * OAuth2 로그인 성공 시 처리하는 핸들러 클래스입니다.
@@ -49,14 +48,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 throw new IllegalStateException("Unknown registrationId: " + registrationId);
         }
 
-        Optional<Member> optionalMember = socialLoginService.findMemberByLoginIdAndLoginType(loginId, loginType);
+        try {
+            Member member = socialLoginService.findMemberByLoginIdAndLoginType(loginId, loginType);
 
-        if (optionalMember.isPresent()) {
             // 이미 존재하는 사용자는 로그인 처리
-            Member member = optionalMember.get();
             request.getSession().setAttribute("member", member);
             getRedirectStrategy().sendRedirect(request, response, "/success");
-        } else {
+        } catch (Exception e) {
             // 사용자가 존재하지 않으면 회원가입 페이지로 리디렉션
             request.getSession().setAttribute("userAttributes", userAttributes);
             request.getSession().setAttribute("loginType", loginType.name());
@@ -77,4 +75,3 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         throw new IllegalStateException("Unknown OAuth2 provider");
     }
 }
-
