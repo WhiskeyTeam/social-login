@@ -33,15 +33,6 @@ public class OAuth2Attributes {
         this.provider = provider;
     }
 
-    /**
-     * 소셜 로그인 공급자에 따라 OAuth2Attributes 객체를 생성하는 정적 팩토리 메서드
-     *
-     * @param registrationId        소셜 로그인 공급자 ID
-     * @param userNameAttributeName 사용자 이름 속성 이름
-     * @param attributes            사용자 속성 맵
-     * @return OAuth2Attributes 객체
-     * @throws BadRequestException 지원하지 않는 소셜 로그인 공급자일 경우 예외 발생
-     */
     public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) throws BadRequestException {
         try {
             log.info("userNameAttributeName = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(userNameAttributeName));
@@ -65,14 +56,6 @@ public class OAuth2Attributes {
         }
     }
 
-    /**
-     * 네이버 로그인 사용자의 OAuth2Attributes 객체를 생성하는 메서드
-     *
-     * @param userNameAttributeName 사용자 이름 속성 이름
-     * @param attributes            사용자 속성 맵
-     * @return OAuth2Attributes 객체
-     */
-    @SuppressWarnings("unchecked")
     private static OAuth2Attributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
@@ -87,13 +70,6 @@ public class OAuth2Attributes {
                 .build();
     }
 
-    /**
-     * 구글 로그인 사용자의 OAuth2Attributes 객체를 생성하는 메서드
-     *
-     * @param userNameAttributeName 사용자 이름 속성 이름
-     * @param attributes            사용자 속성 맵
-     * @return OAuth2Attributes 객체
-     */
     private static OAuth2Attributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
         return OAuth2Attributes.builder()
                 .oauthId((String) attributes.get(userNameAttributeName))
@@ -106,21 +82,15 @@ public class OAuth2Attributes {
                 .build();
     }
 
-    /**
-     * 로그인 ID를 반환하는 메서드
-     *
-     * @return 로그인 ID
-     */
     public String getLoginId() {
         return this.oauthId; // oauthId를 loginId로 사용
     }
 
-    /**
-     * 로그인 타입을 반환하는 메서드
-     *
-     * @return 로그인 타입 (Member.LoginType)
-     */
     public Member.LoginType getLoginType() {
         return this.provider.toLoginType(); // Provider에 따라 로그인 타입 결정
+    }
+
+    public String getName() {
+        return this.nickname; // OAuth2Attributes에서 닉네임을 이름으로 사용
     }
 }
