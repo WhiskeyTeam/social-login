@@ -111,7 +111,9 @@
             <input type="text" name="name" placeholder="이름" required>
             <input type="text" name="nickname" placeholder="닉네임" required>
             <input type="email" name="email" placeholder="이메일" required>
-            <input type="password" name="password" placeholder="비밀번호" required>
+            <input type="password" id="password" name="password" placeholder="비밀번호" required>
+            <input type="password" id="passwordConfirm" placeholder="비밀번호 확인" required>
+            <span id="password-match-message" style="color:red; display:none;">비밀번호가 일치하지 않습니다.</span>
             <button type="submit" id="submit-btn" disabled>회원가입</button>
         </form>
         <div class="options">
@@ -135,7 +137,7 @@
                     $('#submit-btn').prop('disabled', true);
                 } else {
                     alert('사용 가능한 로그인 ID입니다.');
-                    $('#submit-btn').prop('disabled', false);
+                    checkPasswordMatch();  // 비밀번호 일치 여부도 함께 확인
                 }
             },
             error: function() {
@@ -143,6 +145,24 @@
             }
         });
     }
+
+    function checkPasswordMatch() {
+        const password = $('#password').val();
+        const passwordConfirm = $('#passwordConfirm').val();
+
+        if (password !== passwordConfirm) {
+            $('#password-match-message').show();
+            $('#submit-btn').prop('disabled', true);
+        } else {
+            $('#password-match-message').hide();
+            $('#submit-btn').prop('disabled', false);
+        }
+    }
+
+    // 비밀번호 입력 필드의 값이 변경될 때마다 일치 여부 확인
+    $('#password, #passwordConfirm').on('keyup', function() {
+        checkPasswordMatch();
+    });
 </script>
 </body>
 </html>
