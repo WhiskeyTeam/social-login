@@ -132,6 +132,7 @@
             type: 'POST',
             data: { loginId: loginId },
             success: function(response) {
+                console.log("Server response:", response); // 서버 응답을 콘솔에 출력하여 확인
                 if (response.exists) {
                     alert('이미 사용 중인 로그인 ID입니다.');
                     $('#submit-btn').prop('disabled', true);

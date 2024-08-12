@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register_basic", "/register_social", "/success", "/css/**", "/js/**", "/images/**")
+                        .requestMatchers("/", "/login", "/register_basic", "/register_social","/checkLoginId", "/success", "/css/**", "/js/**", "/images/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

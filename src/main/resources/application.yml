@@ -57,6 +57,5 @@ server:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.transaction: TRACE
+    root: INFO
+    com.example.socialauth: DEBUG

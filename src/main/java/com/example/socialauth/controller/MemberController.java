@@ -7,6 +7,7 @@ import com.example.socialauth.service.MemberManagementService;
 import com.example.socialauth.service.SocialLoginService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Controller
 public class MemberController {
 
@@ -47,23 +49,31 @@ public class MemberController {
 
     @PostMapping("/login")
     public String login(@RequestParam String loginId,
-                        @RequestParam(required = false) String password,
+                        @RequestParam String password,
                         HttpSession session,
                         Model model) {
+        log.info("로그인 시도 - Login ID: {}", loginId);
+
         try {
             Member member = memberManagementService.findByLoginId(loginId);
+            log.info("회원 정보 조회 성공 - Login ID: {}, Login Type: {}", loginId, member.getLoginType());
 
-            if (member.getLoginType() == LoginType.BASIC) {
-                if (password != null && passwordEncoder.matches(password, member.getPassword())) {
-                    session.setAttribute("member", member);
-                    return "redirect:/success";
-                } else {
-                    model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
-                }
+            log.debug("Raw password during login: {}", password);
+            log.debug("Encoded password from DB during login: {}", member.getPassword());
+
+            boolean passwordMatches = passwordEncoder.matches(password, member.getPassword());
+            log.debug("Password matches: {}", passwordMatches);
+
+            if (passwordMatches) {
+                log.info("비밀번호 일치 - Login ID: {}", loginId);
+                session.setAttribute("member", member);
+                return "redirect:/success";
             } else {
-                model.addAttribute("error", "소셜 로그인으로 가입된 계정입니다. 소셜 로그인 해주세요.");
+                log.warn("비밀번호 불일치 - Login ID: {}", loginId);
+                model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
             }
         } catch (Exception e) {
+            log.error("로그인 중 오류 발생 - Login ID: {}", loginId, e);
             model.addAttribute("error", "존재하지 않는 회원입니다.");
         }
 
@@ -72,7 +82,8 @@ public class MemberController {
 
     @PostMapping("/checkLoginId")
     public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
-        boolean exists = memberManagementService.findByLoginId(loginId) != null;
+        boolean exists = memberManagementService.existsByLoginId(loginId);
+        log.debug("Checking if login ID exists: {}, result: {}", loginId, exists); // 로그 추가
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
         return ResponseEntity.ok(response);
@@ -86,26 +97,29 @@ public class MemberController {
         String email = allParams.get("email");
         String nickname = allParams.get("nickname");
 
-        if (memberManagementService.findByLoginId(loginId) != null) {
+        if (memberManagementService.existsByLoginId(loginId)) {
             model.addAttribute("error", "이미 존재하는 이메일입니다. 다른 이메일을 사용해주세요.");
             return "register_basic"; // 회원가입 페이지로 다시 돌아감
         }
 
         // 비밀번호 인코딩
-        String encodedPassword = passwordEncoder.encode(password);
-        System.out.println("Encoded password: " + encodedPassword); // 인코딩된 비밀번호 출력
+        log.debug("Raw password during registration: {}", password);
+        String encodedPassword = passwordEncoder.encode(password); // 한 번만 인코딩
+        log.debug("Encoded password during registration: {}", encodedPassword);
 
         try {
             memberManagementService.registerMember(name, nickname, loginId, email, encodedPassword, LoginType.BASIC);
-            System.out.println("Member saved successfully: " + loginId);
+            log.info("Member saved successfully: {}", loginId);
         } catch (Exception e) {
-            System.err.println("Error saving member: " + e.getMessage());
+            log.error("Error saving member: {}", e.getMessage());
             model.addAttribute("error", "이미 존재하는 로그인 ID입니다. 다른 ID를 사용해주세요.");
             return "register_basic";
         }
 
         return "redirect:/login";
     }
+
+
 
     @PostMapping("/register_social")
     public String registerSocial(@RequestParam String nickname, HttpSession session, Model model) {
