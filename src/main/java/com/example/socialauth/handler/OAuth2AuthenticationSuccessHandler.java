@@ -1,5 +1,6 @@
 package com.example.socialauth.handler;
 
+import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.ServletException;
@@ -31,18 +32,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         Map<String, Object> userAttributes = oAuth2User.getAttributes();
 
         String loginId = null;
-        Member.LoginType loginType;
+        LoginType loginType;
 
         String registrationId = getClientRegistrationId(authentication);
 
         switch (registrationId) {
             case "google":
                 loginId = (String) userAttributes.get("sub");  // Google의 경우 sub를 식별자로 사용
-                loginType = Member.LoginType.GOOGLE;
+                loginType = LoginType.GOOGLE;
                 break;
             case "naver":
                 loginId = (String) userAttributes.get("id");  // Naver의 경우 id를 식별자로 사용
-                loginType = Member.LoginType.NAVER;
+                loginType = LoginType.NAVER;
                 break;
             default:
                 throw new IllegalStateException("Unknown registrationId: " + registrationId);

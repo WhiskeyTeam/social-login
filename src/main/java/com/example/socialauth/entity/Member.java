@@ -2,70 +2,54 @@ package com.example.socialauth.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
+@NoArgsConstructor
 @Table(name = "tbl_member")
+@Entity
 @Getter
 @Setter
 public class Member {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 회원 식별자
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(nullable = false)
+    private String name;    // 이름
 
-    @Column(name = "nickname", nullable = false)
-    private String nickname;
+    @Column(nullable = false)
+    private String nickname;    // 닉네임
 
-    @Column(name = "login_id", nullable = false, unique = true)
-    private String loginId;
+    @Column(nullable = false, unique = true)    // 중복 방지
+    private String loginId; // 로그인 아이디
 
-    @Column(name = "email", nullable = false)
-    private String email;
+    @Column(nullable = false)
+    private String email;   // 이메일
 
-    @Column(name = "password")
-    private String password;
+    private String password;    // 비밀번호
+
+    @CreationTimestamp
+    @Column(nullable = false)
+    private LocalDateTime createdAt;   // 생성 시점에 현재 시간 초기화
+
+    private LocalDateTime deletedAt;   // 삭제 시점에 현재 시간 초기화
+
+    @Column(nullable = false)
+    private boolean isActive;   // 활성화/비활성화
+
+//    @OneToOne
+//    @JoinColumn(name = "profile_image_id")
+//    private ImageFile profileImage;    // 프로필 사진
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "login_type", nullable = true)
-    private LoginType loginType;
+    @Column(name = "role", nullable = false)
+    private Role role;    // 회원 권한
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = true)
-    private Role role;
-
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @Column(name = "image_file_id", nullable = true)
-    private Long imageFileId;
-
-    public enum LoginType {
-        BASIC,
-        GOOGLE,
-        NAVER
-    }
-
-    public enum Role {
-        ADMIN,
-        OWNER,
-        USER
-    }
-
-    public Member() {
-        this.isActive = true;
-        this.createdAt = LocalDateTime.now();
-        this.imageFileId = null; // 초기값을 null로 설정
-    }
+    @Column(name = "login_type", nullable = false)
+    private LoginType loginType;    // 로그인 타입
 }

@@ -6,7 +6,6 @@ import com.example.socialauth.handler.OAuth2AuthenticationSuccessHandler;
 import com.example.socialauth.service.CustomOAuth2AuthService;
 import com.example.socialauth.service.CustomOidcUserService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,34 +21,22 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private CustomOAuth2AuthService customOAuth2AuthService;
-    private CustomOidcUserService customOidcUserService;
-    private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
-    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
-    private CustomLogoutSuccessHandler customLogoutSuccessHandler;
+    private final CustomOAuth2AuthService customOAuth2AuthService;
+    private final CustomOidcUserService customOidcUserService;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
-    @Autowired
-    public void setCustomOAuth2AuthService(CustomOAuth2AuthService customOAuth2AuthService) {
+    // Constructor-based dependency injection
+    public SecurityConfig(CustomOAuth2AuthService customOAuth2AuthService,
+                          CustomOidcUserService customOidcUserService,
+                          OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler,
+                          OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+                          CustomLogoutSuccessHandler customLogoutSuccessHandler) {
         this.customOAuth2AuthService = customOAuth2AuthService;
-    }
-
-    @Autowired
-    public void setCustomOidcUserService(CustomOidcUserService customOidcUserService) {
         this.customOidcUserService = customOidcUserService;
-    }
-
-    @Autowired
-    public void setOAuth2AuthenticationFailureHandler(OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
         this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
-    }
-
-    @Autowired
-    public void setOAuth2AuthenticationSuccessHandler(OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) {
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
-    }
-
-    @Autowired
-    public void setCustomLogoutSuccessHandler(CustomLogoutSuccessHandler customLogoutSuccessHandler) {
         this.customLogoutSuccessHandler = customLogoutSuccessHandler;
     }
 
@@ -57,10 +44,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register_basic", "/register_social", "/success", "/css/**", "/js/**", "/images/**").permitAll() // 여기 추가
+                        .requestMatchers("/", "/login", "/register_basic", "/register_social", "/success", "/css/**", "/js/**", "/images/**")
+                        .permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

@@ -1,14 +1,12 @@
 package com.example.socialauth.oauth2;
 
-import com.example.socialauth.entity.Member;
 import com.example.socialauth.exception.BadRequestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 
 @Slf4j
 @Getter
@@ -21,6 +19,17 @@ public class OAuth2Attributes {
     private final String picture;
     private final Provider provider;
 
+    /**
+     * OAuth2Attributes 생성자
+     *
+     * @param attributes 사용자 속성 맵
+     * @param nameAttributeKey 사용자 이름 속성 키
+     * @param oauthId OAuth ID
+     * @param nickname 사용자 닉네임
+     * @param email 사용자 이메일
+     * @param picture 사용자 프로필 사진
+     * @param provider 소셜 로그인 제공자
+     */
     @Builder
     public OAuth2Attributes(Map<String, Object> attributes, String nameAttributeKey, String oauthId,
                             String nickname, String email, String picture, Provider provider) {
@@ -33,8 +42,18 @@ public class OAuth2Attributes {
         this.provider = provider;
     }
 
+    /**
+     * 소셜 로그인 공급자에 따라 OAuth2Attributes 객체를 생성하는 정적 팩토리 메서드
+     *
+     * @param registrationId        소셜 로그인 공급자 ID
+     * @param userNameAttributeName 사용자 이름 속성 이름
+     * @param attributes            사용자 속성 맵
+     * @return OAuth2Attributes 객체
+     * @throws BadRequestException 지원하지 않는 소셜 로그인 공급자일 경우 예외 발생
+     */
     public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) throws BadRequestException {
         try {
+            // 사용자 이름 속성과 사용자 속성을 로그에 기록
             log.info("userNameAttributeName = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(userNameAttributeName));
             log.info("attributes = {}", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(attributes));
         } catch (JsonProcessingException e) {
@@ -42,8 +61,10 @@ public class OAuth2Attributes {
             throw new BadRequestException("Error processing JSON for logging");
         }
 
+        // registrationId를 소문자로 변환
         String registrationIdToLower = registrationId.toLowerCase();
 
+        // 소셜 로그인 공급자에 따라 적절한 메서드 호출
         switch (registrationIdToLower) {
             case "naver":
                 return ofNaver(userNameAttributeName, attributes);
@@ -56,9 +77,19 @@ public class OAuth2Attributes {
         }
     }
 
+    /**
+     * 네이버 로그인 사용자의 OAuth2Attributes 객체를 생성하는 메서드
+     *
+     * @param userNameAttributeName 사용자 이름 속성 이름
+     * @param attributes            사용자 속성 맵
+     * @return OAuth2Attributes 객체
+     */
+    @SuppressWarnings("unchecked")
     private static OAuth2Attributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
+        // attributes 맵에서 "response" 키의 값을 가져옴
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
+        // OAuth2Attributes 객체를 빌더 패턴을 사용하여 생성 및 반환
         return OAuth2Attributes.builder()
                 .oauthId((String) response.get("id"))
                 .nickname((String) response.get("name"))
@@ -70,7 +101,15 @@ public class OAuth2Attributes {
                 .build();
     }
 
+    /**
+     * 구글 로그인 사용자의 OAuth2Attributes 객체를 생성하는 메서드
+     *
+     * @param userNameAttributeName 사용자 이름 속성 이름
+     * @param attributes            사용자 속성 맵
+     * @return OAuth2Attributes 객체
+     */
     private static OAuth2Attributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        // OAuth2Attributes 객체를 빌더 패턴을 사용하여 생성 및 반환
         return OAuth2Attributes.builder()
                 .oauthId((String) attributes.get(userNameAttributeName))
                 .nickname((String) attributes.get("name"))
@@ -80,17 +119,5 @@ public class OAuth2Attributes {
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
-    }
-
-    public String getLoginId() {
-        return this.oauthId; // oauthId를 loginId로 사용
-    }
-
-    public Member.LoginType getLoginType() {
-        return this.provider.toLoginType(); // Provider에 따라 로그인 타입 결정
-    }
-
-    public String getName() {
-        return this.nickname; // OAuth2Attributes에서 닉네임을 이름으로 사용
     }
 }

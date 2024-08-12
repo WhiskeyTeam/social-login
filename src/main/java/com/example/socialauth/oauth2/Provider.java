@@ -1,18 +1,18 @@
 package com.example.socialauth.oauth2;
 
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.LoginType;
 
 public enum Provider {
     BASIC, Naver, Google;
 
-    public Member.LoginType toLoginType() {
+    public LoginType toLoginType() {
         switch (this) {
             case Naver:
-                return Member.LoginType.NAVER;
+                return LoginType.NAVER;
             case Google:
-                return Member.LoginType.GOOGLE;
+                return LoginType.GOOGLE;
             default:
-                return Member.LoginType.BASIC;
+                return LoginType.BASIC;
         }
     }
 }

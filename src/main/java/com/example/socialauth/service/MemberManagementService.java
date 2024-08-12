@@ -1,6 +1,8 @@
 package com.example.socialauth.service;
 
+import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.Role;
 import com.example.socialauth.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +29,7 @@ public class MemberManagementService {
         }
     }
 
-    public Member findByLoginIdAndLoginType(String loginId, Member.LoginType loginType) {
+    public Member findByLoginIdAndLoginType(String loginId, LoginType loginType) {
         try {
             return memberRepository.findByLoginIdAndLoginType(loginId, loginType);
         } catch (Exception e) {
@@ -35,7 +37,7 @@ public class MemberManagementService {
         }
     }
 
-    public Member registerMember(String name, String nickname, String loginId, String email, String password, Member.LoginType loginType) {
+    public Member registerMember(String name, String nickname, String loginId, String email, String password,LoginType loginType) {
         try {
             findByLoginId(loginId);
             throw new IllegalArgumentException("이미 존재하는 로그인 ID입니다.");
@@ -46,8 +48,8 @@ public class MemberManagementService {
             member.setLoginId(loginId);
             member.setEmail(email);
             member.setPassword(password != null ? passwordEncoder.encode(password) : null);
-            member.setLoginType(loginType != null ? loginType : Member.LoginType.BASIC);
-            member.setRole(Member.Role.USER);
+            member.setLoginType(loginType != null ? loginType : LoginType.BASIC);
+            member.setRole(Role.USER);
             member.setActive(true);
 
             return memberRepository.save(member);

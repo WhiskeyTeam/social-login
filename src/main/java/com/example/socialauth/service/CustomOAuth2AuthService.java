@@ -1,8 +1,6 @@
 package com.example.socialauth.service;
 
 import com.example.socialauth.oauth2.OAuth2Attributes;
-import com.example.socialauth.entity.Member;
-import com.example.socialauth.service.SocialLoginService;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +19,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final SocialLoginService socialLoginService; // SocialLoginService 주입
-
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
         log.info("CustomOAuth2AuthService");
@@ -31,6 +27,10 @@ public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequ
             // DefaultOAuth2UserService를 사용하여 OAuth2User를 로드
             OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
             OAuth2User oAuth2User = delegate.loadUser(request);
+
+            // access_token을 로그로 출력
+            String accessToken = request.getAccessToken().getTokenValue();
+            log.info("Access Token: {}", accessToken);
 
             // 클라이언트 등록 ID를 가져옴
             String registrationId = request.getClientRegistration().getRegistrationId();
@@ -41,12 +41,9 @@ public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequ
             // OAuth2Attributes를 생성하여 사용자 속성 맵핑
             OAuth2Attributes attributes = OAuth2Attributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
 
-            // SocialLoginService를 통해 사용자 처리 (존재 여부 확인 및 회원가입)
-            Member member = socialLoginService.processUserLogin(attributes);
-
             // DefaultOAuth2User를 생성하여 반환
             return new DefaultOAuth2User(
-                    Collections.singleton(new SimpleGrantedAuthority(member.getRole().name())), // 사용자 역할을 사용
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
                     attributes.getAttributes(),
                     attributes.getNameAttributeKey()
             );
@@ -61,4 +58,5 @@ public class CustomOAuth2AuthService implements OAuth2UserService<OAuth2UserRequ
             throw new OAuth2AuthenticationException(oauth2Error, e);
         }
     }
+
 }

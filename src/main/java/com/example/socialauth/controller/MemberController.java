@@ -1,6 +1,8 @@
 package com.example.socialauth.controller;
 
+import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.Role;
 import com.example.socialauth.service.MemberManagementService;
 import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.http.HttpSession;
@@ -40,21 +42,14 @@ public class MemberController {
 
     @PostMapping("/login")
     public String login(@RequestParam String loginId, @RequestParam(required = false) String password, HttpSession session, Model model) {
-        System.out.println("Login attempt with ID: " + loginId);
-
         try {
             Member member = memberManagementService.findByLoginId(loginId);
-            System.out.println("Member found: " + member.getLoginId());
-            System.out.println("Stored password: " + member.getPassword()); // 인코딩된 비밀번호 출력
-            System.out.println("Provided password: " + password); // 입력한 비밀번호 출력
 
-            if (member.getLoginType() == Member.LoginType.BASIC) {
+            if (member.getLoginType() == LoginType.BASIC) {
                 if (password != null && passwordEncoder.matches(password, member.getPassword())) {
                     session.setAttribute("member", member);
-                    System.out.println("Password matches!");
                     return "redirect:/success";
                 } else {
-                    System.out.println("Password does not match!");
                     model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
                 }
             } else {
@@ -77,15 +72,14 @@ public class MemberController {
 
         try {
             Member existingMember = memberManagementService.findByLoginId(loginId);
-            model.addAttribute("error", "이미 존재하는 이메일입니다. 다른 이메일을 사용해주세요.");
-            return "register_basic"; // 회원가입 페이지로 다시 돌아감
+            model.addAttribute("error", "이미 존재하는 로그인 ID입니다. 다른 ID를 사용해주세요.");
+            return "register_basic";
         } catch (Exception e) {
             // 회원이 존재하지 않을 경우 계속 진행
         }
 
         // 비밀번호 인코딩
         String encodedPassword = passwordEncoder.encode(password);
-        System.out.println("Encoded password: " + encodedPassword); // 인코딩된 비밀번호 출력
 
         Member member = new Member();
         member.setLoginId(loginId);
@@ -93,15 +87,13 @@ public class MemberController {
         member.setName(name);
         member.setEmail(email);
         member.setNickname(nickname);
-        member.setLoginType(Member.LoginType.BASIC);
-        member.setRole(Member.Role.USER);
+        member.setLoginType(LoginType.BASIC);
+        member.setRole(Role.USER);
 
         try {
             memberManagementService.save(member);
-            System.out.println("Member saved successfully: " + member.getLoginId());
         } catch (Exception ex) {
-            System.err.println("Error saving member: " + ex.getMessage());
-            model.addAttribute("error", "이미 존재하는 로그인 ID입니다. 다른 ID를 사용해주세요.");
+            model.addAttribute("error", "회원가입 중 오류가 발생했습니다.");
             return "register_basic";
         }
 
@@ -110,36 +102,49 @@ public class MemberController {
 
     @PostMapping("/checkLoginId")
     public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
+        Map<String, Boolean> response = new HashMap<>();
         try {
             Member existingMember = memberManagementService.findByLoginId(loginId);
-            Map<String, Boolean> response = new HashMap<>();
             response.put("exists", true);
-            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            Map<String, Boolean> response = new HashMap<>();
             response.put("exists", false);
-            return ResponseEntity.ok(response);
         }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register_social")
-    public String registerSocial(Member member, HttpSession session, Model model) {
+    public String registerSocial(@RequestParam String nickname, HttpSession session, Model model) {
         String loginId = (String) session.getAttribute("loginId");
-        Member.LoginType loginType = Member.LoginType.valueOf((String) session.getAttribute("loginType"));
+        String loginTypeStr = (String) session.getAttribute("loginType");
+
+        if (loginId == null || loginTypeStr == null) {
+            return "redirect:/login"; // 세션에 필요한 정보가 없으면 로그인 페이지로 리다이렉트
+        }
+
+        LoginType loginType = LoginType.valueOf(loginTypeStr);
 
         try {
             Member existingMember = socialLoginService.findMemberByLoginIdAndLoginType(loginId, loginType);
             model.addAttribute("error", "이미 존재하는 회원입니다.");
             return "register_social";
+
         } catch (Exception e) {
             // 회원이 존재하지 않을 경우 계속 진행
         }
 
+        Member member = new Member();
         member.setLoginId(loginId);
+        member.setNickname(nickname);
         member.setLoginType(loginType);
-        member.setRole(Member.Role.USER);
+        member.setRole(Role.USER);
         member.setPassword(null); // 소셜 로그인은 비밀번호가 필요 없음
-        socialLoginService.save(member);
+
+        try {
+            socialLoginService.save(member);
+        } catch (Exception ex) {
+            model.addAttribute("error", "회원가입 중 오류가 발생했습니다.");
+            return "register_social";
+        }
 
         session.setAttribute("member", member);
         return "redirect:/success";
@@ -147,17 +152,11 @@ public class MemberController {
 
     @GetMapping("/success")
     public String success() {
-        System.out.println("Success page requested");
         return "success"; // success.html 반환
     }
 
     @GetMapping("/register_basic")
-    public String showBasicRegisterForm(HttpSession session, Model model) {
-        // 세션에서 소셜 로그인 정보 제거
-        session.removeAttribute("userAttributes");
-        session.removeAttribute("isSocialLogin");
-        session.removeAttribute("loginType");
-
+    public String showBasicRegisterForm(Model model) {
         model.addAttribute("isSocialLogin", false);
         return "register_basic";
     }
