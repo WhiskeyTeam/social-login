@@ -1,9 +1,12 @@
 package com.example.socialauth.service;
 
+
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.oauth2.CustomOAuth2User;
 import com.example.socialauth.oauth2.OAuth2Attributes;
 import com.example.socialauth.repository.MemberRepository;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,8 +15,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -46,12 +47,16 @@ public class CustomOAuth2AuthService extends DefaultOAuth2UserService {
         }
 
         if (member == null) {
+            // 로그 추가
+            log.info("Member not found in database, redirecting to registration.");
+
             // 사용자가 없을 경우, 회원가입 페이지로 리다이렉트
             try {
                 session.setAttribute("userAttributes", attributes.getAttributes());
                 session.setAttribute("loginType", attributes.getLoginType().toString());
                 session.setAttribute("loginId", attributes.getOauthId());
                 response.sendRedirect("/register_social");
+
             } catch (IOException e) {
                 log.error("Redirect failed", e);
             }
@@ -65,6 +70,7 @@ public class CustomOAuth2AuthService extends DefaultOAuth2UserService {
 
         return new CustomOAuth2User(attributes.getAttributes(), attributes.getNameAttributeKey(), authorities);
     }
+
 }
 
 

@@ -34,6 +34,7 @@ dependencies {
     implementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
 
 }
 

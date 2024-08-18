@@ -1,28 +1,27 @@
 package com.example.socialauth.service;
 
+
 import com.example.socialauth.oauth2.OAuth2Attributes;
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.security.oauth2.core.OAuth2Error;
 
-@Slf4j
+import java.util.Collections;
+
 @RequiredArgsConstructor
 @Service
 public class CustomOidcUserService extends OidcUserService {
 
     @Override
     public OidcUser loadUser(OidcUserRequest request) throws OAuth2AuthenticationException {
-        log.info("CustomOidcUserService");
 
         try {
             // DefaultOAuth2UserService를 사용하여 OAuth2User를 로드
@@ -45,12 +44,9 @@ public class CustomOidcUserService extends OidcUserService {
                     attributes.getNameAttributeKey()
             );
         } catch (OAuth2AuthenticationException e) {
-            // OAuth2 인증 예외 처리
-            log.error("OAuth2AuthenticationException: ", e);
             throw e;
         } catch (Exception e) {
             // 일반 예외 처리
-            log.error("Exception: ", e);
             OAuth2Error oauth2Error = new OAuth2Error("server_error", "Failed to load user", null);
             throw new OAuth2AuthenticationException(oauth2Error, e);
         }

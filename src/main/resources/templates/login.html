@@ -4,125 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foodfolio 로그인</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/common.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            display: flex;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 80%;
-            max-width: 1200px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .image-section {
-            width: 50%;
-            background-color: #e9ecef;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .image-section img {
-            width: 80%;
-            height: auto;
-        }
-        .form-section {
-            width: 50%;
-            padding: 40px;
-            box-sizing: border-box;
-        }
-        .form-section h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .form-section .social-login {
-            display: flex;
-            justify-content: space-between;
-        }
-        .form-section .social-login a {
-            width: 48%;
-            height: 48px;
-            margin: 5px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            display: inline-block;
-        }
-        .form-section .social-login .google {
-            background-image: url('/images/web_neutral.png');
-        }
-        .form-section .social-login .naver {
-            background-image: url('/images/btnG_complete.png');
-        }
-        .form-section .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .form-section .divider::before,
-        .form-section .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        .form-section .divider::before {
-            margin-right: 10px;
-        }
-        .form-section .divider::after {
-            margin-left: 10px;
-        }
-        .form-section form {
-            display: flex;
-            flex-direction: column;
-        }
-        .form-section form input[type="text"],
-        .form-section form input[type="password"] {
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .form-section form button {
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #5e72e4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .form-section .options {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-        }
-        .form-section .options a {
-            text-decoration: none;
-            color: #5e72e4;
-        }
+
     </style>
 </head>
-<body>
-<div class="container">
+<body class="login-page">
+<div class="login-container">
     <div class="image-section">
-        <img src="https://via.placeholder.com/500" alt="Placeholder Image">
+        <!-- TODO: 실제 로고 이미지로 교체 필요 -->
+        <!-- <img src="https://via.placeholder.com/500" alt="Placeholder Image"> -->
     </div>
     <div class="form-section">
         <h1>Foodfolio에 오신 것을 환영합니다</h1>
+        <div class="social-login">
+            <a href="/oauth2/authorization/naver" class="naver"></a>
+            <a href="/oauth2/authorization/google" class="google"></a>
+        </div>
+        <div class="divider">또는</div>
+        <!-- TODO: 폼 제출 처리 로직 구현 필요 -->
         <form action="/login" method="post">
             <input type="text" id="loginId" name="loginId" placeholder="아이디" required />
             <input type="password" id="password" name="password" placeholder="비밀번호" required />
@@ -135,12 +36,8 @@
             <button type="submit">로그인</button>
         </form>
         <div class="options">
+            <!-- TODO: 회원가입 페이지 연결 확인 필요 -->
             <span>계정이 없으신가요? <a href="/register_basic">회원가입</a></span>
-        </div>
-        <div class="divider">또는</div>
-        <div class="social-login">
-            <a href="/oauth2/authorization/naver" class="naver"></a>
-            <a href="/oauth2/authorization/google" class="google"></a>
         </div>
     </div>
 </div>

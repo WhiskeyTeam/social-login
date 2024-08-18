@@ -1,15 +1,14 @@
 package com.example.socialauth.service;
 
+
 import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.entity.Role;
 import com.example.socialauth.repository.MemberRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 public class MemberManagementService {
 
@@ -26,6 +25,9 @@ public class MemberManagementService {
         return memberRepository.findByLoginId(loginId);
     }
 
+    public Member getMemberId(long memberId) {
+        return memberRepository.getMemberById(memberId);
+    }
 
     public boolean existsByLoginId(String loginId) {
         return memberRepository.existsByLoginId(loginId);
@@ -48,7 +50,6 @@ public class MemberManagementService {
 
         return memberRepository.save(member);
     }
-
 
     public Member save(Member member) {
         return memberRepository.save(member);

@@ -1,10 +1,11 @@
 package com.example.socialauth.config;
 
+
 import com.example.socialauth.handler.OAuth2AuthenticationSuccessHandler;
 import com.example.socialauth.service.SocialLoginService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Configuration
 public class OAuth2SuccessHandlerConfig {

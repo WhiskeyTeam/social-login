@@ -1,12 +1,13 @@
 package com.example.socialauth.service;
 
+
 import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.repository.MemberRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 @Service
@@ -21,6 +22,10 @@ public class SocialLoginService {
 
     public Member findMemberByLoginIdAndLoginType(String loginId, LoginType type) {
         return memberRepository.findByLoginIdAndLoginType(loginId, type);
+    }
+
+    public Member getMemberId(long memberId) {
+        return memberRepository.getMemberById(memberId);
     }
 
     public void handleSocialLogin(HttpSession session, String loginId, String name, String email, String loginType) {
