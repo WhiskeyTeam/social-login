@@ -1,6 +1,5 @@
 package com.example.socialauth.config;
 
-
 import com.example.socialauth.service.CustomOAuth2AuthService;
 import com.example.socialauth.service.CustomOidcUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +35,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 ) // 세션 관리 설정
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/mainPage", "/login", "/register_basic", "/register_social", "/checkLoginId", "/css/**", "/js/**", "/images/**", "/static/**")
 //                        .permitAll() // 특정 경로에 대한 접근 허용
-//                        .anyRequest().authenticated() // 그 외의 모든 요청은 인증 필요
-                                .anyRequest().permitAll()
+                        .anyRequest().permitAll() // 그 외의 모든 요청은 인증 필요
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -51,12 +49,23 @@ public class SecurityConfig {
                         .failureUrl("/login?error=true")
                         .successHandler((request, response, authentication) -> {
                             log.info("User {} has successfully logged in.", authentication.getName());
-                            log.info("Authorities: {}", authentication.getAuthorities());
-                            log.info("Is authenticated: {}", authentication.isAuthenticated());
-                            log.info("User Roles after setting context: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
                             SecurityContextHolder.getContext().setAuthentication(authentication);
-                            log.info("User Roles: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-                            response.sendRedirect("/mainPage");
+                            log.info("User Roles after setting context: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+
+                            // 세션에 인증 정보 추가
+                            request.getSession().setAttribute("isAuthenticated", true);
+
+                            // userRole을 문자열로 변환하여 세션에 저장
+                            String userRole = authentication.getAuthorities().stream()
+                                    .map(GrantedAuthority::getAuthority)
+                                    .collect(Collectors.joining(","));
+                            request.getSession().setAttribute("userRole", userRole);
+
+                            if (!response.isCommitted()) {
+                                response.sendRedirect("/mainPage");
+                            } else {
+                                log.warn("Response already committed. Unable to redirect.");
+                            }
                         })
                         .permitAll()
                 )
@@ -80,13 +89,18 @@ public class SecurityConfig {
                                     .collect(Collectors.joining(","));
                             request.getSession().setAttribute("userRole", userRole);
 
-                            response.sendRedirect("/mainPage");
+                            if (!response.isCommitted()) {
+                                response.sendRedirect("/mainPage");
+                            } else {
+                                log.warn("Response already committed. Unable to redirect.");
+                            }
                         })
-
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout") // 로그아웃 URL 설정
-                        .logoutSuccessUrl("/login?logout=true") // 로그아웃 성공 후 이동할 페이지
+                        .logoutSuccessUrl("/mainPage") // 로그아웃 성공 후 이동할 페이지
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
                         .permitAll() // 로그아웃 관련 요청은 모두 허용
                 );
 

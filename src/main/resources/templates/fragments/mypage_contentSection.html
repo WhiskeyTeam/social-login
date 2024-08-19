@@ -1,17 +1,18 @@
 <!-- src/main/resources/templates/fragments/mypage_contentSection.html -->
 <section th:fragment="contentSection(type)" th:id="${type}" class="content-section">
     <div th:if="${type == 'profile'}" class="profile-content">
-        <h2>About <span th:text="${name ?: '김철수'}">김철수</span></h2>
+        <h2>About <span th:text="${member.nickname}"></span></h2>
         <div class="profile-details">
-            <p><i class="fas fa-map-marker-alt"></i> <span th:text="${location ?: '서울시 강남구'}">서울시 강남구</span></p>
-            <p><i class="fas fa-calendar-alt"></i> <span th:text="${joinDate ?: '2023년 6월 1일'}">2023년 6월 1일</span>에 가입</p>
-            <p><i class="fas fa-heart"></i> 관심사: <span th:text="${interests ?: '맛집 탐방, 요리'}">맛집 탐방, 요리</span></p>
+            <p><i class="fas fa-envelope"></i> 이메일: <span th:text="${member.email}"></span></p>
+            <p><i class="fas fa-user"></i> 이름: <span th:text="${member.name}"></span></p>
+            <p><i class="fas fa-id-card"></i> 닉네임: <span th:text="${member.nickname}"></span></p>
+            <p><i class="fas fa-calendar-alt"></i> <span th:text="${#temporals.format(member.createdAt, 'yyyy년 MM월 dd일 HH시 mm분')}"></span>에 가입</p>
         </div>
         <div class="user-bio">
             <h3>자기소개</h3>
             <p th:text="${bio ?: '안녕하세요. 맛집을 좋아하는 평범한 직장인입니다. 주말마다 새로운 맛집을 찾아다니는 것이 취미입니다.'}">안녕하세요. 맛집을 좋아하는 평범한 직장인입니다. 주말마다 새로운 맛집을 찾아다니는 것이 취미입니다.</p>
         </div>
-        <button class="edit-profile-btn">프로필 수정</button>
+        <button class="edit-profile-btn">회원정보 수정</button>
     </div>
 
     <div th:if="${type == 'reviews'}" class="reviews-content">

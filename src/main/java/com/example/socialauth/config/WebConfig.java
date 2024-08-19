@@ -19,6 +19,13 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+                // 로그로 세션 ID를 남겨서 세션이 유지되는지 확인
+                HttpSession session = request.getSession(false);
+                if (session == null) {
+                    log.warn("Session does not exist.");
+                } else {
+                    log.info("Session ID: {}", session.getId());
+                }
                 return true;
             }
 
@@ -31,14 +38,17 @@ public class WebConfig implements WebMvcConfigurer {
                         String userRole = (String) session.getAttribute("userRole");
 
                         // 로그 추가
-                        log.info("postHandle - isAuthenticated: {}, userRole: {}", isAuthenticated, userRole);
+                        log.info("postHandle - Session ID: {}, isAuthenticated: {}, userRole: {}", session.getId(), isAuthenticated, userRole);
 
-                        modelAndView.addObject("isAuthenticated", isAuthenticated);
-                        modelAndView.addObject("userRole", userRole);
+                        if (isAuthenticated != null) {
+                            modelAndView.addObject("isAuthenticated", isAuthenticated);
+                        }
+                        if (userRole != null) {
+                            modelAndView.addObject("userRole", userRole);
+                        }
                     }
                 }
             }
         });
     }
 }
-

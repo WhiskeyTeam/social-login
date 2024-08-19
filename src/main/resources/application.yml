@@ -49,9 +49,17 @@ spring:
     cache: false
     encoding: UTF-8
 
-verification:
-  api:
-    url: http://web.dokalab.site:8084/api/redis
+  mail:
+    host: db.dokalab.site
+    port: 25
+    username: ADMIN
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
 
 server:
   port: 8080

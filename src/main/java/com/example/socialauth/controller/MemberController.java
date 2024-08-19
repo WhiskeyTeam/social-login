@@ -3,9 +3,12 @@ package com.example.socialauth.controller;
 import com.example.socialauth.entity.LoginType;
 import com.example.socialauth.entity.Member;
 import com.example.socialauth.entity.Role;
+import com.example.socialauth.review.ReviewService;
 import com.example.socialauth.service.MemberManagementService;
 import com.example.socialauth.service.SocialLoginService;
 import com.example.socialauth.service.VerificationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
@@ -24,13 +28,15 @@ import java.util.Map;
 @Controller
 public class MemberController {
 
+    private final ReviewService reviewService;
     private final SocialLoginService socialLoginService;
     private final MemberManagementService memberManagementService;
     private final PasswordEncoder passwordEncoder;
     private final VerificationService verificationService;
 
     @Autowired
-    public MemberController(SocialLoginService socialLoginService, MemberManagementService memberManagementService, PasswordEncoder passwordEncoder, VerificationService verificationService) {
+    public MemberController(ReviewService reviewService, SocialLoginService socialLoginService, MemberManagementService memberManagementService, PasswordEncoder passwordEncoder, VerificationService verificationService) {
+        this.reviewService = reviewService;
         this.socialLoginService = socialLoginService;
         this.memberManagementService = memberManagementService;
         this.passwordEncoder = passwordEncoder;
@@ -39,15 +45,16 @@ public class MemberController {
 
     @GetMapping("/")
     public String home() {
-        return "mainPage"; // mainPage.html 반환
+        return "mainPage"; // mainPage.html 반환, 로그인 여부와 상관없이 접근 가능
     }
 
     @GetMapping("/login")
-    public String loginPage(@RequestParam(required = false) Boolean isAuthenticated,
-                            @RequestParam(required = false) String userRole,
-                            HttpSession session) {
+    public String loginPage(HttpSession session) {
+        Boolean isAuthenticated = (Boolean) session.getAttribute("isAuthenticated");
+        String userRole = (String) session.getAttribute("userRole");
+
         if (Boolean.TRUE.equals(isAuthenticated) && userRole != null) {
-            return "redirect:/mainPage"; // mainPage로 리다이렉트
+            return "redirect:/mainPage"; // 이미 인증된 경우 mainPage로 리다이렉트
         }
 
         return "login"; // login.html 반환
@@ -66,10 +73,7 @@ public class MemberController {
         }
 
         if (passwordEncoder.matches(password, member.getPassword())) {
-            session.setAttribute("member", member);
-            session.setAttribute("isAuthenticated", true);
-            session.setAttribute("userRole", member.getRole().toString());
-
+            setSessionAttributes(session, member);
             return "redirect:/mainPage";
         } else {
             model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
@@ -82,27 +86,29 @@ public class MemberController {
         Boolean isAuthenticated = (Boolean) session.getAttribute("isAuthenticated");
         String userRole = (String) session.getAttribute("userRole");
 
-        log.info("isAuthenticated: {}, userRole: {}", isAuthenticated, userRole);
+        model.addAttribute("isAuthenticated", isAuthenticated);
+        model.addAttribute("userRole", userRole);
 
-        if (Boolean.TRUE.equals(isAuthenticated) && userRole != null) {
-            model.addAttribute("isAuthenticated", isAuthenticated);
-            model.addAttribute("userRole", userRole);
-            return "mainPage";
-        }
-
-        return "redirect:/login";
+        return "mainPage"; // 로그인 여부에 관계없이 접근 가능
     }
 
     @GetMapping("/mypage")
-    public String showMyPage(HttpSession session, Model model) {
+    public String myPage(Model model, HttpSession session) {
         Member member = (Member) session.getAttribute("member");
         if (member == null) {
-            model.addAttribute("error", "로그인 정보가 없습니다. 다시 로그인해 주세요.");
+            log.warn("Member is null in session");
             return "redirect:/login";
         }
+
+        // 리뷰 수 가져오기
+        int reviewCount = reviewService.getReviewsByMember(member).size();
+        model.addAttribute("reviewCount", reviewCount);
+
+        log.info("Member found: {}", member.getName());
         model.addAttribute("member", member);
         return "mypage";
     }
+
 
     @PostMapping("/checkLoginId")
     public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
@@ -187,10 +193,7 @@ public class MemberController {
             member.setPassword(null);
 
             socialLoginService.save(member);
-
-            session.setAttribute("isAuthenticated", true);
-            session.setAttribute("userRole", member.getRole().toString());
-            session.setAttribute("member", member);
+            setSessionAttributes(session, member);
 
             return "redirect:/mainPage";
 
@@ -220,9 +223,20 @@ public class MemberController {
         return "register_social";
     }
 
+    @GetMapping("/loginSuccess")
+    public String loginSuccess(HttpServletRequest request, HttpServletResponse response) {
+        return "redirect:/mypage";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/login";
+        return "redirect:/mainPage";
+    }
+
+    private void setSessionAttributes(HttpSession session, Member member) {
+        session.setAttribute("member", member);
+        session.setAttribute("isAuthenticated", true);
+        session.setAttribute("userRole", member.getRole().toString());
     }
 }

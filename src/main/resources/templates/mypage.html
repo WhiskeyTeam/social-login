@@ -15,7 +15,7 @@
     
     <div class="container">
         <!-- TODO: 백엔드 개발자는 사용자 정보를 동적으로 가져와서 profileHeader 프래그먼트에 전달해야 합니다. -->
-        <div th:replace="fragments/mypage_profileHeader :: profileHeader(${member.name}, ${member.joinDate}, ${member.reviewCount})"></div>
+        <div th:replace="fragments/mypage_profileHeader :: profileHeader(${member.name}, ${member.createdAt}, ${reviewCount})"></div>
 
 
         <div class="content-wrapper">

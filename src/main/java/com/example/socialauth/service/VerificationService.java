@@ -16,7 +16,7 @@ public class VerificationService {
 
     private final RestTemplate restTemplate;
 
-    @Value("http://web.dokalab.site:8084/api/redis")
+    @Value("http://web.dokalab.site:8084/api/redis/save")
     private String apiUrl;
 
     public VerificationService(RestTemplate restTemplate) {
