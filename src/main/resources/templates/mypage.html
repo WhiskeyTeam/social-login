@@ -76,14 +76,12 @@
         </div>
     </div>
     <!-- TODO: 백엔드 개발자는 프로필 수정 모달에 현재 사용자 정보를 미리 채워넣어야 합니다. -->
-    <!-- 네이버 로그인 사용자 -->
-    <div th:if="${member.loginType == 'NAVER'}" th:replace="fragments/mypage_editProfileModal_social :: editProfileModalSocial(${member})"></div>
+    <!-- 일반 회원 수정 모달 -->
+    <div th:if="${isSocialLogin == false}" th:insert="~{fragments/mypage_editProfileModal_basic :: editProfileModalBasic(${member})}"></div>
 
-    <!-- 구글 로그인 사용자 -->
-    <div th:if="${member.loginType == 'GOOGLE'}" th:replace="fragments/mypage_editProfileModal_social :: editProfileModalSocial(${member})"></div>
+    <!-- 소셜 로그인 사용자 모달 -->
+    <div th:if="${isSocialLogin == true}" th:insert="~{fragments/mypage_editProfileModal_social :: editProfileModalSocial(${member})}"></div>
 
-    <!-- 기본 회원가입 사용자 -->
-    <div th:if="${member.loginType == 'BASIC'}" th:replace="fragments/mypage_editProfileModal_basic :: editProfileModalBasic(${member})"></div>
 
 
 

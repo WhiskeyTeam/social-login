@@ -100,20 +100,13 @@ public class MemberController {
     @GetMapping("/mypage")
     public String myPage(Model model, HttpSession session) {
         Member member = (Member) session.getAttribute("member");
-        if (member == null) {
-            log.warn("Member is null in session");
-            return "redirect:/login";
-        }
-
-        int reviewCount = reviewService.getReviewsByMember(member).size();
-        model.addAttribute("reviewCount", reviewCount);
-
-        log.info("Member found: {}, LoginType: {}", member.getName(), member.getLoginType()); // 추가된 로그
+        Boolean isSocialLogin = member.getLoginType() != LoginType.BASIC;
 
         model.addAttribute("member", member);
+        model.addAttribute("isSocialLogin", isSocialLogin);
+
         return "mypage";
     }
-
 
     @PostMapping("/checkLoginId")
     public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
@@ -245,6 +238,7 @@ public class MemberController {
         session.setAttribute("isAuthenticated", true);
         session.setAttribute("userRole", member.getRole().toString());
         session.setAttribute("loginType", member.getLoginType().toString());
+        log.info("Session loginType set to: {}", member.getLoginType().toString());
     }
 
 }

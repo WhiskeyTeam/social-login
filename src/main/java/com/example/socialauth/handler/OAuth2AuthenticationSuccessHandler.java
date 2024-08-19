@@ -52,13 +52,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         try {
             Member member = socialLoginService.findMemberByLoginIdAndLoginType(loginId, loginType);
 
-            // 세션 무효화 후 다시 설정
             request.getSession().invalidate();  // 이전 세션 무효화
             HttpSession newSession = request.getSession(true);  // 새로운 세션 생성
 
             newSession.setAttribute("member", member);
             newSession.setAttribute("isAuthenticated", true);
             newSession.setAttribute("userRole", member.getRole().name());
+            newSession.setAttribute("isSocialLogin", loginType != LoginType.BASIC); // 소셜 로그인 여부 설정
 
             log.info("Session ID after successful authentication: {}", newSession.getId());
             log.info("Session attributes set: isAuthenticated={}, userRole={}",
@@ -78,6 +78,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             getRedirectStrategy().sendRedirect(request, response, "/register_social");
         }
     }
+
 
 
     private String getClientRegistrationId(Authentication authentication) {
