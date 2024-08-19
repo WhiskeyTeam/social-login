@@ -108,10 +108,12 @@ public class MemberController {
         int reviewCount = reviewService.getReviewsByMember(member).size();
         model.addAttribute("reviewCount", reviewCount);
 
-        log.info("Member found: {}", member.getName());
+        log.info("Member found: {}, LoginType: {}", member.getName(), member.getLoginType()); // 추가된 로그
+
         model.addAttribute("member", member);
         return "mypage";
     }
+
 
     @PostMapping("/checkLoginId")
     public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
@@ -191,7 +193,7 @@ public class MemberController {
             member.setNickname(nickname);
             member.setName((String) userAttributes.get("name"));
             member.setEmail((String) userAttributes.get("email"));
-            member.setLoginType(loginType);
+            member.setLoginType(loginType); // LoginType 설정
             member.setRole(Role.USER);
             member.setActive(true);
             member.setPassword(null);
@@ -242,5 +244,7 @@ public class MemberController {
         session.setAttribute("member", member);
         session.setAttribute("isAuthenticated", true);
         session.setAttribute("userRole", member.getRole().toString());
+        session.setAttribute("loginType", member.getLoginType().toString());
     }
+
 }
