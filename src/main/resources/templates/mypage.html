@@ -76,21 +76,32 @@
         </div>
     </div>
     <!-- TODO: 백엔드 개발자는 프로필 수정 모달에 현재 사용자 정보를 미리 채워넣어야 합니다. -->
-    <div th:replace="fragments/mypage_editProfileModal :: editProfileModal"></div>
+    <!-- 네이버 로그인 사용자 -->
+    <div th:if="${member.loginType == 'NAVER'}" th:replace="fragments/mypage_editProfileModal_social :: editProfileModalSocial(${member})"></div>
+
+    <!-- 구글 로그인 사용자 -->
+    <div th:if="${member.loginType == 'GOOGLE'}" th:replace="fragments/mypage_editProfileModal_social :: editProfileModalSocial(${member})"></div>
+
+    <!-- 기본 회원가입 사용자 -->
+    <div th:if="${member.loginType == 'BASIC'}" th:replace="fragments/mypage_editProfileModal_basic :: editProfileModalBasic(${member})"></div>
+
+
+
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.profile-nav li');
             const contentSections = document.querySelectorAll('.content-section');
-        
+
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
                     const tab = this.getAttribute('data-tab');
-                    
+
                     navItems.forEach(navItem => navItem.classList.remove('active'));
                     this.classList.add('active');
-                    
+
                     contentSections.forEach(section => {
                         section.classList.remove('active');
                         if (section.id === tab) {
@@ -102,35 +113,70 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('editProfileModal');
+            const modalBasic = document.getElementById('editProfileModalBasic');
+            const modalSocial = document.getElementById('editProfileModalSocial');
             const btn = document.querySelector('.edit-profile-btn');
-            const span = document.getElementsByClassName('close')[0];
-            const form = document.getElementById('editProfileForm');
+            const spanBasic = modalBasic ? modalBasic.getElementsByClassName('close')[0] : null;
+            const spanSocial = modalSocial ? modalSocial.getElementsByClassName('close')[0] : null;
+            const formBasic = document.getElementById('editProfileFormBasic');
+            const formSocial = document.getElementById('editProfileFormSocial');
 
-            btn.onclick = function() {
-                modal.style.display = "block";
-                setTimeout(() => modal.classList.add('show'), 10);
+            if (btn) {
+                btn.onclick = function() {
+                    // 소셜 로그인과 일반 로그인 모달을 구분해서 표시
+                    if (modalBasic) {
+                        modalBasic.style.display = "block";
+                        setTimeout(() => modalBasic.classList.add('show'), 10);
+                    } else if (modalSocial) {
+                        modalSocial.style.display = "block";
+                        setTimeout(() => modalSocial.classList.add('show'), 10);
+                    }
+                };
             }
 
-            span.onclick = function() {
-                modal.classList.remove('show');
-                setTimeout(() => modal.style.display = "none", 300);
+            if (spanBasic) {
+                spanBasic.onclick = function() {
+                    modalBasic.classList.remove('show');
+                    setTimeout(() => modalBasic.style.display = "none", 300);
+                };
+            }
+
+            if (spanSocial) {
+                spanSocial.onclick = function() {
+                    modalSocial.classList.remove('show');
+                    setTimeout(() => modalSocial.style.display = "none", 300);
+                };
+            }
+
+            if (formBasic) {
+                formBasic.onsubmit = function(e) {
+                    e.preventDefault();
+                    modalBasic.classList.remove('show');
+                    setTimeout(() => modalBasic.style.display = "none", 300);
+                };
+            }
+
+            if (formSocial) {
+                formSocial.onsubmit = function(e) {
+                    e.preventDefault();
+                    modalSocial.classList.remove('show');
+                    setTimeout(() => modalSocial.style.display = "none", 300);
+                };
             }
 
             window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.classList.remove('show');
-                    setTimeout(() => modal.style.display = "none", 300);
+                if (modalBasic && event.target == modalBasic) {
+                    modalBasic.classList.remove('show');
+                    setTimeout(() => modalBasic.style.display = "none", 300);
+                } else if (modalSocial && event.target == modalSocial) {
+                    modalSocial.classList.remove('show');
+                    setTimeout(() => modalSocial.style.display = "none", 300);
                 }
-            }
-
-            form.onsubmit = function(e) {
-                e.preventDefault();
-                // TODO: 백엔드 개발자는 여기에 프로필 수정 폼 제출 처리 로직을 구현해야 합니다.
-                modal.classList.remove('show');
-                setTimeout(() => modal.style.display = "none", 300);
-            }
+            };
         });
+
+
     </script>
+
 </body>
 </html>

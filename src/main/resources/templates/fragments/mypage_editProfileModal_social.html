@@ -1,0 +1,13 @@
+<!-- src/main/resources/templates/fragments/mypage_editProfileModal_social.html -->
+<div th:fragment="editProfileModalSocial(member)" id="editProfileModalSocial" class="modal">
+    <div class="modal-content">
+        <span class="close">×</span>
+        <h2>회원정보 수정</h2>
+        <form id="editProfileFormSocial">
+            <label for="socialNickname">닉네임:</label>
+            <input type="text" id="socialNickname" name="nickname" th:value="${member.nickname}" required>
+
+            <button type="submit">저장</button>
+        </form>
+    </div>
+</div>

@@ -7,19 +7,22 @@ import com.example.socialauth.review.ReviewService;
 import com.example.socialauth.service.MemberManagementService;
 import com.example.socialauth.service.SocialLoginService;
 import com.example.socialauth.service.VerificationService;
+import com.example.socialauth.emailauth.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,20 +35,26 @@ public class MemberController {
     private final SocialLoginService socialLoginService;
     private final MemberManagementService memberManagementService;
     private final PasswordEncoder passwordEncoder;
+    private final RestTemplate restTemplate;
+    private final EmailService emailService;
     private final VerificationService verificationService;
 
     @Autowired
-    public MemberController(ReviewService reviewService, SocialLoginService socialLoginService, MemberManagementService memberManagementService, PasswordEncoder passwordEncoder, VerificationService verificationService) {
+    public MemberController(ReviewService reviewService, SocialLoginService socialLoginService,
+                            MemberManagementService memberManagementService, PasswordEncoder passwordEncoder,
+                            RestTemplate restTemplate, EmailService emailService, VerificationService verificationService) {
         this.reviewService = reviewService;
         this.socialLoginService = socialLoginService;
         this.memberManagementService = memberManagementService;
         this.passwordEncoder = passwordEncoder;
+        this.restTemplate = restTemplate;
+        this.emailService = emailService;
         this.verificationService = verificationService;
     }
 
     @GetMapping("/")
     public String home() {
-        return "mainPage"; // mainPage.html 반환, 로그인 여부와 상관없이 접근 가능
+        return "mainPage";
     }
 
     @GetMapping("/login")
@@ -54,18 +63,14 @@ public class MemberController {
         String userRole = (String) session.getAttribute("userRole");
 
         if (Boolean.TRUE.equals(isAuthenticated) && userRole != null) {
-            return "redirect:/mainPage"; // 이미 인증된 경우 mainPage로 리다이렉트
+            return "redirect:/mainPage";
         }
 
-        return "login"; // login.html 반환
+        return "login";
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String loginId,
-                        @RequestParam String password,
-                        HttpSession session,
-                        Model model) {
-
+    public String login(@RequestParam String loginId, @RequestParam String password, HttpSession session, Model model) {
         Member member = memberManagementService.findByLoginId(loginId);
         if (member == null) {
             model.addAttribute("error", "존재하지 않는 회원입니다.");
@@ -89,7 +94,7 @@ public class MemberController {
         model.addAttribute("isAuthenticated", isAuthenticated);
         model.addAttribute("userRole", userRole);
 
-        return "mainPage"; // 로그인 여부에 관계없이 접근 가능
+        return "mainPage";
     }
 
     @GetMapping("/mypage")
@@ -100,7 +105,6 @@ public class MemberController {
             return "redirect:/login";
         }
 
-        // 리뷰 수 가져오기
         int reviewCount = reviewService.getReviewsByMember(member).size();
         model.addAttribute("reviewCount", reviewCount);
 
@@ -108,7 +112,6 @@ public class MemberController {
         model.addAttribute("member", member);
         return "mypage";
     }
-
 
     @PostMapping("/checkLoginId")
     public ResponseEntity<Map<String, Boolean>> checkLoginId(@RequestParam String loginId) {
@@ -125,40 +128,41 @@ public class MemberController {
         String name = allParams.get("name");
         String email = allParams.get("email");
         String nickname = allParams.get("nickname");
+        String verificationCode = allParams.get("emailVerificationCode");
 
         if (memberManagementService.existsByLoginId(loginId)) {
             model.addAttribute("error", "이미 존재하는 로그인 ID입니다. 다른 ID를 사용해주세요.");
-            return "register_basic"; // register_basic.html 반환
+            return "register_basic";
         }
 
-        String encodedPassword = passwordEncoder.encode(password); // 비밀번호 인코딩
+        if (!verificationService.verifyCode(email, verificationCode)) {
+            model.addAttribute("error", "인증 코드가 올바르지 않습니다.");
+            return "register_basic";
+        }
+
+        String encodedPassword = passwordEncoder.encode(password);
 
         try {
             memberManagementService.registerMember(name, nickname, loginId, email, encodedPassword, LoginType.BASIC);
-
-            String verificationCode = verificationService.generateAndSaveVerificationCode(email);
-
-            model.addAttribute("message", "회원가입이 완료되었습니다. 이메일을 확인하고 인증 코드를 입력해주세요.");
-            model.addAttribute("verificationCode", verificationCode);
-
+            model.addAttribute("message", "회원가입이 성공적으로 완료되었습니다.");
+            return "redirect:/login";
         } catch (Exception e) {
             model.addAttribute("error", "회원가입 중 오류가 발생했습니다.");
             return "register_basic";
         }
-
-        return "redirect:/verify"; // 인증 코드를 입력하는 페이지로 리다이렉션
     }
 
-    @PostMapping("/verify_code")
-    public String verifyCode(@RequestParam String email, @RequestParam String code, Model model) {
-        boolean isVerified = verificationService.verifyCode(email, code);
-
-        if (isVerified) {
-            model.addAttribute("message", "인증이 성공적으로 완료되었습니다.");
-            return "redirect:/login";
-        } else {
-            model.addAttribute("error", "인증 코드가 올바르지 않습니다.");
-            return "verify_code";
+    @CrossOrigin(origins = "http://localhost:8080")
+    @PostMapping("/api/redis/save")
+    public ResponseEntity<String> sendVerificationCode(@RequestParam String email) {
+        try {
+            String verificationCode = verificationService.generateAndSaveVerificationCode(email);
+            emailService.sendVerificationCode(email, verificationCode);
+            log.info("Generated and sent verification code to email: {}", email);
+            return ResponseEntity.ok("인증 코드가 이메일로 전송되었습니다.");
+        } catch (Exception e) {
+            log.error("Error during sending verification code", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("인증 코드 전송 중 오류가 발생했습니다. 다시 시도해주세요.");
         }
     }
 
@@ -217,7 +221,7 @@ public class MemberController {
         if (loginType != null && userAttributes != null) {
             model.addAttribute("userAttributes", userAttributes);
         } else {
-            model.addAttribute("userAttributes", new HashMap<String, Object>());
+            model.addAttribute("userAttributes", new HashMap<>());
         }
         model.addAttribute("isSocialLogin", true);
         return "register_social";
