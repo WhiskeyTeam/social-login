@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -40,6 +41,10 @@ public class SocialLoginService {
         Member member = findMemberByLoginIdAndLoginType(loginId, type);
 
         if (member != null) {
+            // 계정 비활성화 여부 확인
+            if (!member.isActive()) {
+                throw new IllegalArgumentException("해당 계정은 비활성화되어 있습니다.");
+            }
             session.setAttribute("member", member);
         } else {
             session.setAttribute("userAttributes", Map.of("name", name, "email", email, "loginType", loginType, "loginId", loginId));
@@ -66,4 +71,12 @@ public class SocialLoginService {
 
         System.out.println("회원 정보 업데이트 완료");
     }
+
+    @Transactional
+    public void deactivateMember(Member member) {
+        member.setActive(false);
+        member.setDeletedAt(LocalDateTime.now());
+        memberRepository.save(member);
+    }
+
 }

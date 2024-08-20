@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -64,6 +65,20 @@ public class CustomOAuth2AuthService extends DefaultOAuth2UserService {
 
             return new CustomOAuth2User(attributes.getAttributes(), attributes.getNameAttributeKey(),
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        }
+
+        // 계정이 비활성화된 경우 알럿을 띄우고 로그인 중단
+        if (!member.isActive()) {
+            log.info("Attempted login with deactivated account: {}", member.getLoginId());
+            try {
+                response.setContentType("text/html; charset=UTF-8");
+                PrintWriter out = response.getWriter();
+                out.println("<script>alert('해당 계정은 비활성화되어 있습니다. 관리자에게 문의하세요.'); location.href='/login';</script>");
+                out.flush();
+            } catch (IOException e) {
+                log.error("Failed to send alert for deactivated account", e);
+            }
+            return null; // null 반환하여 인증 실패 처리
         }
 
         // 사용자가 있는 경우 권한과 함께 OAuth2User 반환

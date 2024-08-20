@@ -77,6 +77,11 @@ public class MemberController {
             return "login";
         }
 
+        if (!member.isActive()) {
+            model.addAttribute("alertMessage", "해당 계정은 비활성화되어 있습니다. 관리자에게 문의하세요.");
+            return "login";
+        }
+
         if (passwordEncoder.matches(password, member.getPassword())) {
             setSessionAttributes(session, member);
             return "redirect:/mainPage";
@@ -85,6 +90,7 @@ public class MemberController {
             return "login";
         }
     }
+
 
     @GetMapping("/mainPage")
     public String mainPage(HttpSession session, Model model) {
@@ -304,6 +310,32 @@ public class MemberController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
+        return "redirect:/mainPage";
+    }
+
+    @PostMapping("/deactivateAccount")
+    public String deactivateAccount(HttpSession session) {
+        Member member = (Member) session.getAttribute("member");
+
+        if (member == null) {
+            log.warn("No member found in session, redirecting to login.");
+            return "redirect:/login";
+        }
+
+        // 회원의 로그인 타입에 따라 적절한 서비스를 호출
+        if (member.getLoginType() == LoginType.BASIC) {
+            // 일반 로그인 회원의 비활성화 처리
+            memberManagementService.deactivateMember(member);
+        } else {
+            // 소셜 로그인 회원의 비활성화 처리
+            socialLoginService.deactivateMember(member);
+        }
+
+        // 세션 무효화
+        session.invalidate();
+
+        log.info("Member {} has deactivated their account.", member.getLoginId());
+
         return "redirect:/mainPage";
     }
 

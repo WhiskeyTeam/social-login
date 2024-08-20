@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @Transactional
 public class MemberManagementService {
@@ -74,6 +76,13 @@ public class MemberManagementService {
         memberRepository.save(member);
 
         System.out.println("회원 정보 업데이트 완료");
+    }
+
+    @Transactional
+    public void deactivateMember(Member member) {
+        member.setActive(false);
+        member.setDeletedAt(LocalDateTime.now());
+        memberRepository.save(member);
     }
 
 }
