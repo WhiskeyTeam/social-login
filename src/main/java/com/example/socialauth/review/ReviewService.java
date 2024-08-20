@@ -1,7 +1,7 @@
 package com.example.socialauth.review;
 
 
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.member.Member;
 import com.example.socialauth.entity.review.Review;
 import com.example.socialauth.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;

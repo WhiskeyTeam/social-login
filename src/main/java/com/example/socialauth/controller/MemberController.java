@@ -1,8 +1,8 @@
 package com.example.socialauth.controller;
 
-import com.example.socialauth.entity.LoginType;
-import com.example.socialauth.entity.Member;
-import com.example.socialauth.entity.Role;
+import com.example.socialauth.entity.member.LoginType;
+import com.example.socialauth.entity.member.Member;
+import com.example.socialauth.entity.member.Role;
 import com.example.socialauth.review.ReviewService;
 import com.example.socialauth.service.MemberManagementService;
 import com.example.socialauth.service.SocialLoginService;
@@ -100,8 +100,12 @@ public class MemberController {
     @GetMapping("/mypage")
     public String myPage(Model model, HttpSession session) {
         Member member = (Member) session.getAttribute("member");
-        Boolean isSocialLogin = member.getLoginType() != LoginType.BASIC;
+        if (member == null) {
+            log.warn("No member found in session, redirecting to login.");
+            return "redirect:/login";
+        }
 
+        Boolean isSocialLogin = member.getLoginType() != LoginType.BASIC;
         model.addAttribute("member", member);
         model.addAttribute("isSocialLogin", isSocialLogin);
 
@@ -191,6 +195,9 @@ public class MemberController {
             member.setActive(true);
             member.setPassword(null);
 
+            // 사용자에게 환영 메시지를 설정
+            member.setIntroduction("안녕하세요 " + nickname + " 만나서 반갑습니다");
+
             socialLoginService.save(member);
             setSessionAttributes(session, member);
 
@@ -227,6 +234,73 @@ public class MemberController {
         return "redirect:/mypage";
     }
 
+    @PostMapping("/updateProfileBasic")
+    public String updateProfileBasic(@RequestParam Map<String, String> params, HttpSession session, Model model) {
+        log.info("Received request to update basic profile with params: {}", params);
+
+        Member member = (Member) session.getAttribute("member");
+
+        if (member == null) {
+            log.warn("No member found in session, redirecting to login.");
+            return "redirect:/login";
+        }
+
+        // 전달받은 파라미터를 멤버에 적용하기 전에 로깅
+        log.info("Updating basic member with new parameters - Name: {}, Nickname: {}, Introduction: {}",
+                params.get("name"), params.get("nickname"), params.get("introduction"));
+
+        member.setName(params.get("name"));
+        member.setNickname(params.get("nickname"));
+        member.setEmail(params.get("email"));
+
+        String password = params.get("password");
+        if (password != null && !password.isEmpty()) {
+            member.setPassword(passwordEncoder.encode(password));
+        }
+
+        // "자기소개" 필드 업데이트
+        member.setIntroduction(params.get("introduction"));
+
+        // 변경 사항을 저장하는 코드
+        memberManagementService.updateMember(member);
+
+        log.info("Successfully updated member: {}", member);
+
+        session.setAttribute("member", member);
+        model.addAttribute("member", member);
+
+        return "redirect:/mypage";
+    }
+
+    @PostMapping("/updateProfileSocial")
+    public String updateProfileSocial(@RequestParam Map<String, String> params, HttpSession session, Model model) {
+        log.info("Received request to update social profile with params: {}", params);
+
+        Member member = (Member) session.getAttribute("member");
+
+        if (member == null) {
+            log.warn("No member found in session, redirecting to login.");
+            return "redirect:/login";
+        }
+
+        // 전달받은 파라미터를 멤버에 적용하기 전에 로깅
+        log.info("Updating social member with new parameters - Nickname: {}, Introduction: {}",
+                params.get("nickname"), params.get("introduction"));
+
+        member.setNickname(params.get("nickname"));
+        member.setIntroduction(params.get("introduction"));
+
+        // 변경 사항을 저장하는 코드
+        socialLoginService.updateMember(member);
+
+        log.info("Successfully updated social member: {}", member);
+
+        session.setAttribute("member", member);
+        model.addAttribute("member", member);
+
+        return "redirect:/mypage";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
@@ -240,5 +314,4 @@ public class MemberController {
         session.setAttribute("loginType", member.getLoginType().toString());
         log.info("Session loginType set to: {}", member.getLoginType().toString());
     }
-
 }

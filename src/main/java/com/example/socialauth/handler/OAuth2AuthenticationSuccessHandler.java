@@ -1,7 +1,7 @@
 package com.example.socialauth.handler;
 
-import com.example.socialauth.entity.LoginType;
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.member.LoginType;
+import com.example.socialauth.entity.member.Member;
 import com.example.socialauth.service.SocialLoginService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

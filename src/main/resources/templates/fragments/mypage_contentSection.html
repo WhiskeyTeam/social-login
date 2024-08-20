@@ -1,4 +1,3 @@
-<!-- src/main/resources/templates/fragments/mypage_contentSection.html -->
 <section th:fragment="contentSection(type)" th:id="${type}" class="content-section">
     <div th:if="${type == 'profile'}" class="profile-content">
         <h2>About <span th:text="${member.nickname}"></span></h2>
@@ -10,11 +9,16 @@
         </div>
         <div class="user-bio">
             <h3>자기소개</h3>
-            <p th:text="${bio ?: '안녕하세요. 맛집을 좋아하는 평범한 직장인입니다. 주말마다 새로운 맛집을 찾아다니는 것이 취미입니다.'}">안녕하세요. 맛집을 좋아하는 평범한 직장인입니다. 주말마다 새로운 맛집을 찾아다니는 것이 취미입니다.</p>
+            <p th:text="${member.introduction != null && !member.introduction.isEmpty() ? member.introduction : '안녕하세요 ' + member.nickname + ' 만나서 반갑습니다.'}">
+                <!-- 기본 자기소개 텍스트 -->
+                안녕하세요. 만나서 반갑습니다.
+            </p>
         </div>
         <button class="edit-profile-btn">회원정보 수정</button>
+        <button class="unsubscribe-btn">회원 탈퇴 신청</button>
     </div>
 
+    <!-- 리뷰 섹션 및 북마크 섹션은 원래 코드 그대로 유지 -->
     <div th:if="${type == 'reviews'}" class="reviews-content">
         <h2>내가 작성한 리뷰</h2>
         <div class="review-list">

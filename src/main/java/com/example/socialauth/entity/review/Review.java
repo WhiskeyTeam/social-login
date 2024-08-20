@@ -1,7 +1,7 @@
 package com.example.socialauth.entity.review;
 
 
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +9,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @Table(name = "tbl_review")

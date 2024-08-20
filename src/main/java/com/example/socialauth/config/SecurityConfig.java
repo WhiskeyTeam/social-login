@@ -35,7 +35,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 ) // 세션 관리 설정
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/mainPage", "/login", "/register_basic", "/register_social", "/checkLoginId", "/css/**", "/js/**", "/images/**", "/static/**")

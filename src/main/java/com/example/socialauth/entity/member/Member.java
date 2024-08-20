@@ -1,5 +1,6 @@
-package com.example.socialauth.entity;
+package com.example.socialauth.entity.member;
 
+import com.example.socialauth.entity.resource.ImageFile;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

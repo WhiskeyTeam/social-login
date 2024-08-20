@@ -1,7 +1,7 @@
 package com.example.socialauth.repository;
 
 
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.member.Member;
 import com.example.socialauth.entity.review.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 

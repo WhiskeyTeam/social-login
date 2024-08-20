@@ -1,4 +1,4 @@
-package com.example.socialauth.entity;
+package com.example.socialauth.entity.member;
 
 import lombok.NoArgsConstructor;
 

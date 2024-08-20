@@ -148,6 +148,22 @@ body {
     background-color: var(--hover-color);
 }
 
+.unsubscribe-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.unsubscribe-btn:hover {
+    background-color: var(--hover-color);
+}
+
 .activity-feed {
     margin-top: 30px;
 }
@@ -384,5 +400,20 @@ body {
         height: 200px;
         margin-right: 0;
         margin-bottom: 15px;
+    }
+
+    /* 탈퇴 버튼 반응형 조정 */
+    .unsubscribe-btn {
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+        font-size: 1.1em;
+    }
+
+    .edit-profile-btn {
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+        font-size: 1.1em;
     }
 }

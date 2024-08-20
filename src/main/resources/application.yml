@@ -9,15 +9,6 @@ spring:
     resources:
       static-locations: classpath:/static/
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    database-platform: org.hibernate.dialect.MySQLDialect
-
   security:
     oauth2:
       client:
@@ -59,6 +50,15 @@ spring:
           auth: false
           starttls:
             enable: false
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      use_sql_comments: true
+
 
 server:
   port: 8080

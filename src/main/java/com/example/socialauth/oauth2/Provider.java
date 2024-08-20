@@ -1,6 +1,6 @@
 package com.example.socialauth.oauth2;
 
-import com.example.socialauth.entity.LoginType;
+import com.example.socialauth.entity.member.LoginType;
 
 public enum Provider {
     BASIC, Naver, Google;

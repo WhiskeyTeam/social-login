@@ -1,7 +1,7 @@
 package com.example.socialauth.repository;
 
-import com.example.socialauth.entity.LoginType;
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.member.LoginType;
+import com.example.socialauth.entity.member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {

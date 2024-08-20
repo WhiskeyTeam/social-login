@@ -1,6 +1,6 @@
 package com.example.socialauth.service;
 
-import com.example.socialauth.entity.Member;
+import com.example.socialauth.entity.member.Member;
 import com.example.socialauth.oauth2.CustomOAuth2User;
 import com.example.socialauth.oauth2.OAuth2Attributes;
 import com.example.socialauth.repository.MemberRepository;

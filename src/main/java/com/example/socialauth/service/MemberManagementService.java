@@ -1,15 +1,17 @@
 package com.example.socialauth.service;
 
 
-import com.example.socialauth.entity.LoginType;
-import com.example.socialauth.entity.Member;
-import com.example.socialauth.entity.Role;
+import com.example.socialauth.entity.member.LoginType;
+import com.example.socialauth.entity.member.Member;
+import com.example.socialauth.entity.member.Role;
 import com.example.socialauth.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class MemberManagementService {
 
     private final MemberRepository memberRepository;
@@ -48,10 +50,30 @@ public class MemberManagementService {
         member.setRole(Role.USER);
         member.setActive(true);
 
+        // 자동으로 자기소개를 설정
+        member.setIntroduction("안녕하세요 " + nickname + " 만나서 반갑습니다");
+
         return memberRepository.save(member);
     }
 
     public Member save(Member member) {
         return memberRepository.save(member);
     }
+
+    @Transactional
+    public void updateMember(Member member) {
+        System.out.println("회원 업데이트 트랜잭션 시작");
+
+        // 영속성 컨텍스트에 의해 관리되고 있는지 확인
+        if (memberRepository.existsById(member.getId())) {
+            System.out.println("엔티티가 영속성 컨텍스트에 의해 관리되고 있습니다.");
+        } else {
+            System.out.println("엔티티가 영속성 컨텍스트에 의해 관리되고 있지 않습니다.");
+        }
+
+        memberRepository.save(member);
+
+        System.out.println("회원 정보 업데이트 완료");
+    }
+
 }
